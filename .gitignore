@@ -1,0 +1,31 @@
+## ODPADY PO KOMPILACJI (.NET)
+[Bb]in/
+[Oo]bj/
+[Ex]ecutable/
+[Log]s/
+
+## PLIKI USTAWIEŃ I CACHE IDE (Visual Studio, VS Code, Rider)
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## BAZA DANYCH SQLITE (Kluczowe dla Waszego projektu!)
+# Ignorujemy plik bazy danych oraz pliki tymczasowe tworzone przez SQLite podczas pracy
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+## PLIKI KONFIGURACYJNE ZE SEKRETAMI (Opcjonalnie)
+# Jeśli będziecie trzymać tam hasła, warto to odpiąć od Gita
+appsettings.Development.json
+
+## SYSTEMOWE ŚMIECI
+.DS_Store
+Thumbs.db
