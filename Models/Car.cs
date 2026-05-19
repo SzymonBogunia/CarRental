@@ -31,6 +31,8 @@ namespace CarRental.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal PricePerDay { get; set; }
 
+        public string? ImageUrl { get; set; }
+
         [Required]
         public CarStatus Status { get; set; } = CarStatus.Available;
     }

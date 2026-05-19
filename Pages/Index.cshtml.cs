@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace CarRental.Pages // Upewnij siê, ¿e masz tu nazwê swojego projektu (CarRental)
+namespace CarRental.Pages 
 {
     public class IndexModel : PageModel
     {
@@ -13,7 +13,7 @@ namespace CarRental.Pages // Upewnij siê, ¿e masz tu nazwê swojego projektu (Car
 
         public void OnGet()
         {
-            // Pusta metoda na start
+
         }
     }
 }

@@ -28,6 +28,14 @@
         {
             <div class="col">
                 <div class="card h-100 shadow-sm border-0">
+                    @if (!string.IsNullOrEmpty(car.ImageUrl))
+                    {
+                        <img src="@car.ImageUrl" class="card-img-top" alt="@car.Brand @car.Model" style="height: 200px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <img src="/images/cars/default.jpg" class="card-img-top" alt="Brak zdjęcia" style="height: 200px; object-fit: cover;">
+                    }
                     <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between">
                         <span>@car.Brand</span>
                         <small class="text-secondary">ID: @car.Id</small>
