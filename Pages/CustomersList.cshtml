@@ -1,0 +1,314 @@
+﻿@page
+@model CustomersListModel
+@{
+    ViewData["Title"] = "Baza Klientów";
+}
+
+<div class="d-flex justify-content-between align-items-center my-4">
+    <div>
+        <h1 class="fw-bold text-dark">Baza Klientów</h1>
+        <p class="text-muted">Zarządzaj danymi kierowców, weryfikuj dokumenty i uprawnienia.</p>
+    </div>
+    <a asp-page="/CustomerCreate" class="btn btn-success shadow-sm fw-bold">+ Dodaj nowego klienta</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Imię i Nazwisko</th>
+                        <th>PESEL</th>
+                        <th>Numer Prawa Jazdy</th>
+                        <th class="text-center pe-4">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Customers.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <span class="fs-2 d-block mb-2">👥</span>
+                                Brak zarejestrowanych klientów w bazie danych.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var customer in Model.Customers)
+                        {
+                            <tr>
+                                <td class="fw-bold ps-4">#@customer.Id</td>
+                                <td>
+                                    <span class="fw-bold text-primary">@customer.FirstName @customer.LastName</span>
+                                </td>
+                                <td>
+                                    <code class="text-dark">@customer.Pesel</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">@customer.DriverLicenseNumber</span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-info"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#detailsModal"
+                                                data-firstname="@customer.FirstName"
+                                                data-lastname="@customer.LastName"
+                                                data-pesel="@customer.Pesel"
+                                                data-passport="@customer.PassportNumber"
+                                                data-license="@customer.DriverLicenseNumber"
+                                                data-email="@customer.Email"
+                                                data-phone="@customer.PhoneNumber"
+                                                data-regdate="@customer.RegistrationDate.ToString("dd.MM.yyyy HH:mm")"
+                                                title="Szczegóły klienta">
+                                            🔍
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editCustomerModal"
+                                                data-id="@customer.Id"
+                                                data-firstname="@customer.FirstName"
+                                                data-lastname="@customer.LastName"
+                                                data-pesel="@customer.Pesel"
+                                                data-passport="@customer.PassportNumber"
+                                                data-license="@customer.DriverLicenseNumber"
+                                                data-email="@customer.Email"
+                                                data-phone="@customer.PhoneNumber"
+                                                title="Edytuj dane">
+                                            ✏️
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal"
+                                                data-id="@customer.Id"
+                                                data-name="@customer.FirstName @customer.LastName">
+                                            ❌
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!--MODAL DO DETALI-->
+
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title fw-bold" id="detailsModalLabel">📋 Karta informacyjna klienta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="display-6 mb-1">👤</div>
+                    <h3 class="fw-bold text-dark mb-0" id="detFullName">---</h3>
+                    <small class="text-muted">Profil zarejestrowanego kierowcy</small>
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted"><i class="fw-semibold text-dark">ID klienta:</i></span>
+                        <span class="badge bg-secondary px-2" id="detId">---</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted">PESEL:</span>
+                        <strong class="text-dark" id="detPesel">---</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted">Numer paszportu:</span>
+                        <strong class="text-dark" id="detPassport">---</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted">Prawo jazdy:</span>
+                        <span class="badge bg-light text-dark border px-3 py-2" id="detLicense">---</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted">Adres E-mail:</span>
+                        <a href="#" class="text-decoration-none" id="detEmail">---</a>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted">Telefon:</span>
+                        <strong class="text-dark" id="detPhone">---</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted">Data rejestracji:</span>
+                        <small class="text-muted" id="detRegDate">---</small>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary fw-bold w-100" data-bs-dismiss="modal">Zamknij podgląd</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL DO USUNIECIA-->
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="deleteModalLabel">⚠️ Potwierdzenie usunięcia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4 text-center">
+                <p class="fs-5 mb-1">Czy na pewno chcesz usunąć klienta:</p>
+                <h4 class="fw-bold text-danger" id="customerNamePlaceholder">---</h4>
+                <p class="text-muted small mb-0">Tej operacji nie można cofnąć.</p>
+            </div>
+            <div class="modal-footer bg-light border-top-0">
+                <button type="button" class="btn btn-secondary fw-semibold" data-bs-dismiss="modal">Anuluj</button>
+
+                <form method="post" asp-page-handler="Delete" id="deleteForm">
+                    <input type="hidden" name="id" id="customerIdInput" value="" />
+                    <button type="submit" class="btn btn-danger fw-bold px-4">Tak, usuń</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL DO EDYCJI-->
+
+<div class="modal fade" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold" id="editCustomerModalLabel">✏️ Edycja danych kierowcy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="post" asp-page-handler="Edit">
+
+                    <input type="hidden" asp-for="CustomerToEdit.Id" id="editCustId" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <h6 class="text-muted border-bottom pb-2 mb-3 fw-bold">Dane osobowe</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="CustomerToEdit.FirstName" class="form-label fw-semibold">Imię</label>
+                            <input asp-for="CustomerToEdit.FirstName" id="editCustFirstName" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CustomerToEdit.LastName" class="form-label fw-semibold">Nazwisko</label>
+                            <input asp-for="CustomerToEdit.LastName" id="editCustLastName" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CustomerToEdit.Pesel" class="form-label fw-semibold">PESEL (Obywatel PL)</label>
+                            <input asp-for="CustomerToEdit.Pesel" id="editCustPesel" class="form-control" maxlength="11" data-val="false" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CustomerToEdit.PassportNumber" class="form-label fw-semibold">Numer paszportu (Obcokrajowiec)</label>
+                            <input asp-for="CustomerToEdit.PassportNumber" id="editCustPassport" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="CustomerToEdit.DriverLicenseNumber" class="form-label fw-semibold">Numer prawa jazdy</label>
+                            <input asp-for="CustomerToEdit.DriverLicenseNumber" id="editCustLicense" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <h6 class="text-muted border-bottom pb-2 mb-3 fw-bold">Dane kontaktowe</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="CustomerToEdit.Email" class="form-label fw-semibold">Adres E-mail</label>
+                            <input asp-for="CustomerToEdit.Email" type="email" id="editCustEmail" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CustomerToEdit.PhoneNumber" class="form-label fw-semibold">Numer telefonu</label>
+                            <input asp-for="CustomerToEdit.PhoneNumber" type="tel" id="editCustPhone" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-warning fw-bold px-4">Zapisz zmiany</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // obsluga modala usunięcia
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const customerId = button.getAttribute('data-id');
+                const customerName = button.getAttribute('data-name');
+
+                document.getElementById('customerNamePlaceholder').textContent = customerName;
+                document.getElementById('customerIdInput').value = customerId;
+            });
+        }
+
+        // obsługa modala szczegółów
+        const detailsModal = document.getElementById('detailsModal');
+        if (detailsModal) {
+            detailsModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                // Wyciągamy dane z atrybutów przycisku
+                const firstName = button.getAttribute('data-firstname');
+                const lastName = button.getAttribute('data-lastname');
+                const pesel = button.getAttribute('data-pesel') || 'Brak danych';
+                const passport = button.getAttribute('data-passport') || 'Nie podano (Obywatel PL)';
+                const license = button.getAttribute('data-license');
+                const email = button.getAttribute('data-email');
+                const phone = button.getAttribute('data-phone');
+                const regDate = button.getAttribute('data-regdate');
+
+                // Wstrzykujemy dane do HTML-a wewnątrz okienka
+                document.getElementById('detFullName').textContent = `${firstName} ${lastName}`;
+                document.getElementById('detPesel').textContent = pesel;
+                document.getElementById('detPassport').textContent = passport;
+                document.getElementById('detLicense').textContent = license;
+                document.getElementById('detEmail').textContent = email;
+                document.getElementById('detEmail').href = `mailto:${email}`;
+                document.getElementById('detPhone').textContent = phone;
+                document.getElementById('detRegDate').textContent = regDate;
+            });
+        }
+        // edycja
+        const editCustomerModal = document.getElementById('editCustomerModal');
+        if (editCustomerModal) {
+            editCustomerModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                // Wstrzykiwanie pobranych atrybutów do pól formularza w pop-upie
+                document.getElementById('editCustId').value = button.getAttribute('data-id');
+                document.getElementById('editCustFirstName').value = button.getAttribute('data-firstname');
+                document.getElementById('editCustLastName').value = button.getAttribute('data-lastname');
+                document.getElementById('editCustPesel').value = button.getAttribute('data-pesel') || '';
+                document.getElementById('editCustPassport').value = button.getAttribute('data-passport') || '';
+                document.getElementById('editCustLicense').value = button.getAttribute('data-license');
+                document.getElementById('editCustEmail').value = button.getAttribute('data-email');
+                document.getElementById('editCustPhone').value = button.getAttribute('data-phone');
+            });
+        }
+
+    </script>
+
+}

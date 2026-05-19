@@ -16,7 +16,7 @@ namespace WypozyczalniaSamochodowa.Models
         public string LastName { get; set; } = string.Empty;
 
         [MaxLength(11)] 
-        public string Pesel { get; set; } = string.Empty;
+        public string? Pesel { get; set; } = string.Empty;
 
         [MaxLength(30)]
         public string? PassportNumber { get; set; }

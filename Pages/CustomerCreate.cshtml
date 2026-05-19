@@ -1,0 +1,76 @@
+﻿@page
+@model CustomerCreateModel
+@{
+    ViewData["Title"] = "Dodaj Nowego Klienta";
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white py-3">
+                <h4 class="mb-0 fw-bold">👥 Rejestracja nowego klienta</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <h5 class="text-muted border-bottom pb-2 mb-3 fw-bold">Dane osobowe</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="NewCustomer.FirstName" class="form-label fw-semibold">Imię</label>
+                            <input asp-for="NewCustomer.FirstName" class="form-control" placeholder="np. Jan" required />
+                            <span asp-validation-for="NewCustomer.FirstName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCustomer.LastName" class="form-label fw-semibold">Nazwisko</label>
+                            <input asp-for="NewCustomer.LastName" class="form-control" placeholder="np. Kowalski" required />
+                            <span asp-validation-for="NewCustomer.LastName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCustomer.Pesel" class="form-label fw-semibold">PESEL (Obywatel PL)</label>
+                            <input asp-for="NewCustomer.Pesel" class="form-control" placeholder="11 cyfr" maxlength="11" data-val="false" />
+                            <span asp-validation-for="NewCustomer.Pesel" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCustomer.PassportNumber" class="form-label fw-semibold">Numer paszportu (opcjonalnie)</label>
+                            <input asp-for="NewCustomer.PassportNumber" class="form-control" placeholder="np. CA123456" />
+                            <span asp-validation-for="NewCustomer.PassportNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="NewCustomer.DriverLicenseNumber" class="form-label fw-semibold">Numer prawa jazdy</label>
+                            <input asp-for="NewCustomer.DriverLicenseNumber" class="form-control" placeholder="np. 12345/67/8910" required />
+                            <span asp-validation-for="NewCustomer.DriverLicenseNumber" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <h5 class="text-muted border-bottom pb-2 mb-3 fw-bold">Dane kontaktowe</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NewCustomer.Email" class="form-label fw-semibold">Adres E-mail</label>
+                            <input asp-for="NewCustomer.Email" type="email" class="form-control" placeholder="jan@kowalski.pl" required />
+                            <span asp-validation-for="NewCustomer.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCustomer.PhoneNumber" class="form-label fw-semibold">Numer telefonu</label>
+                            <input asp-for="NewCustomer.PhoneNumber" type="tel" class="form-control" placeholder="np. +48 123 456 789" required />
+                            <span asp-validation-for="NewCustomer.PhoneNumber" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a asp-page="/CustomersList" class="btn btn-light border">Anuluj</a>
+                        <button type="submit" class="btn btn-success px-4 fw-bold">Zapisz klienta</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

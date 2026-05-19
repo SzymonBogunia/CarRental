@@ -1,0 +1,71 @@
+﻿@page
+@model CarCreateModel
+@{
+    ViewData["Title"] = "Dodaj Nowy Samochód";
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold">🚗 Dodaj nowy pojazd do floty</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NewCar.Brand" class="form-label fw-semibold">Marka</label>
+                            <input asp-for="NewCar.Brand" class="form-control"  required />
+                            <span asp-validation-for="NewCar.Brand" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCar.Model" class="form-label fw-semibold">Model</label>
+                            <input asp-for="NewCar.Model" class="form-control" required />
+                            <span asp-validation-for="NewCar.Model" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCar.ProductionYear" class="form-label fw-semibold">Rok produkcji</label>
+                            <input asp-for="NewCar.ProductionYear" type="number" class="form-control" min="1900" max="2027" required />
+                            <span asp-validation-for="NewCar.ProductionYear" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCar.PricePerDay" class="form-label fw-semibold">Cena za dobę (zł)</label>
+                            <input asp-for="NewCar.PricePerDay" type="number" step="0.01" class="form-control" placeholder="np. 150.00" required />
+                            <span asp-validation-for="NewCar.PricePerDay" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCar.RegistrationNumber" class="form-label fw-semibold">Numer rejestracyjny</label>
+                            <input asp-for="NewCar.RegistrationNumber" class="form-control" required />
+                            <span asp-validation-for="NewCar.RegistrationNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NewCar.VIN" class="form-label fw-semibold">Numer VIN</label>
+                            <input asp-for="NewCar.VIN" class="form-control" placeholder="17 znaków" required />
+                            <span asp-validation-for="NewCar.VIN" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="NewCar.ImageUrl" class="form-label fw-semibold">Ścieżka do zdjęcia (opcjonalnie)</label>
+                            <input asp-for="NewCar.ImageUrl" class="form-control" placeholder="/images/cars/auto.jpg" />
+                            <small class="text-muted">Jeśli pozostawisz puste, system przypisze domyślną grafikę awaryjną.</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a asp-page="/CarsList" class="btn btn-light border">Anuluj</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Zapisz pojazd</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
