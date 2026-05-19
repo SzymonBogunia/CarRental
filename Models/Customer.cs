@@ -22,6 +22,10 @@ namespace WypozyczalniaSamochodowa.Models
         public string? PassportNumber { get; set; }
 
         [Required]
+        [MaxLength(30)]
+        public string DriverLicenseNumber { get; set; } = string.Empty;
+
+        [Required]
         [EmailAddress]
         [MaxLength(100)]
         public string Email { get; set; } = string.Empty;
