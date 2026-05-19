@@ -1,0 +1,57 @@
+﻿@page
+@model CarsListModel
+@{
+    ViewData["Title"] = "Lista Samochodów";
+}
+
+<div class="d-flex justify-content-between align-items-center my-4">
+    <div>
+        <h1 class="fw-bold text-dark">Flota Samochodów</h1>
+        <p class="text-muted">Przeglądaj i zarządzaj dostępnymi pojazdami w systemie.</p>
+    </div>
+    <a href="#" class="btn btn-success shadow-sm">+ Dodaj nowy samochód</a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @if (Model.Cars.Count == 0)
+    {
+        <div class="col-12 text-center my-5">
+            <div class="alert alert-warning py-4" role="alert">
+                <h4 class="alert-heading fw-bold">Brak pojazdów!</h4>
+                <p class="mb-0">Baza danych SQLite jest pusta. Dodaj samochody przez Swaggera lub formularz.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        @foreach (var car in Model.Cars)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between">
+                        <span>@car.Brand</span>
+                        <small class="text-secondary">ID: @car.Id</small>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold text-primary mb-3">@car.Model</h5>
+                        <p class="card-text mb-2"><strong>Rok produkcji:</strong> @car.ProductionYear</p>
+                        <p class="card-text mb-3"><strong>Rejestracja:</strong> <span class="badge bg-light text-dark border">@car.RegistrationNumber</span></p>
+
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                            <span class="text-success fs-5 fw-bold">@car.PricePerDay zł <small class="text-muted" style="font-size: 11px;">/ doba</small></span>
+
+                            @if (car.Status == 0)
+                            {
+                                <span class="badge bg-success px-3 py-2">Dostępny</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger px-3 py-2">Niedostępny</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

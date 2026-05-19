@@ -1,10 +1,14 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Strona główna";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center my-5">
+    <h1 class="display-4 fw-bold text-dark">Witaj w CarRental</h1>
+    <p class="lead text-muted">Aplikacja została pomyślnie uruchomiona. Wybierz opcję z menu na górze, aby przejść do floty.</p>
+    <hr class="my-4" style="max-width: 400px; margin: 0 auto;" />
+    <div class="d-flex justify-content-center gap-2 mt-4">
+        <a asp-page="/CarsList" class="btn btn-primary shadow-sm">Przejdź do Floty Pojazdów 🚗</a>
+    </div>
 </div>
