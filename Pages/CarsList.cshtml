@@ -95,7 +95,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form method="post" asp-page-handler="Edit">
+                <form method="post" asp-page-handler="Edit" enctype="multipart/form-data">
 
                     <input type="hidden" asp-for="CarToEdit.Id" id="editCarId" />
 
@@ -140,8 +140,10 @@
                         </div>
 
                         <div class="col-12">
-                            <label asp-for="CarToEdit.ImageUrl" class="form-label fw-semibold">Ścieżka do zdjęcia</label>
-                            <input asp-for="CarToEdit.ImageUrl" id="editCarImage" class="form-control" />
+                            <label class="form-label fw-semibold">Zmień zdjęcie pojazdu</label>
+                            <input type="hidden" asp-for="CarToEdit.ImageUrl" id="editCarImage" />
+                            <input type="file" name="CarImageFile" class="form-control" accept="image/*" />
+                            <small class="text-muted text-warning">Wybierz nowy plik tylko jeśli chcesz zastąpić obecne zdjęcie.</small>
                         </div>
                     </div>
 

@@ -17,7 +17,7 @@
 
                     <div class="mb-3">
                         <label asp-for="NewRental.CarId" class="form-label fw-semibold">🚗 Wybierz samochód</label>
-                        <select asp-for="NewRental.CarId" asp-items="Model.CarOptions" class="form-select" required>
+                        <select asp-for="NewRental.CarId" id="carSelect" asp-items="Model.CarOptions" class="form-select" required>
                             <option value="">-- Wybierz pojazd z floty --</option>
                         </select>
                         <span asp-validation-for="NewRental.CarId" class="text-danger small"></span>
@@ -45,9 +45,16 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-light border small text-muted mb-4">
-                        💡 <strong>Wskazówka:</strong> Cena całkowita (`TotalPrice`) zostanie skalkulowana automatycznie na backendzie jako: <br />
-                        <code>Liczba dób (zaokrąglona w górę) × Cena dobowej stawki auta</code>.
+                    <div class="card bg-light border-0 p-3 mb-4 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0 text-muted fw-bold text-uppercase" style="font-size: 0.8rem;">Szacowany koszt wynajmu</h6>
+                                <small id="durationBadge" class="text-secondary fw-semibold">Wybierz daty i auto...</small>
+                            </div>
+                            <div>
+                                <span id="livePriceDisplay" class="fs-3 fw-bold text-dark">0.00</span> <span class="fw-bold text-dark">zł</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
@@ -62,5 +69,87 @@
 </div>
 
 @section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // 1. Próba pobrania po ID, a jeśli nie ma - szukamy po atrybucie name nadawanym przez ASP.NET
+            const carSelect = document.getElementById("carSelect") || document.querySelector("[name='NewRental.CarId']");
+            const startDateInput = document.getElementById("startDateInput") || document.querySelector("[name='NewRental.StartDate']");
+            const endDateInput = document.getElementById("endDateInput") || document.querySelector("[name='NewRental.EndDate']");
+
+            const livePriceDisplay = document.getElementById("livePriceDisplay");
+            const durationBadge = document.getElementById("durationBadge");
+
+            // Mały test diagnostyczny w konsoli przeglądarki (F12 -> Console)
+            console.log("Weryfikacja pól formularza przez JS:", { carSelect, startDateInput, endDateInput });
+
+            function calculateLivePrice() {
+                if (!carSelect || !startDateInput || !endDateInput) {
+                    durationBadge.textContent = "⚠️ Błąd skryptu: Nie znaleziono pól formularza.";
+                    return;
+                }
+
+                const selectedOption = carSelect.options[carSelect.selectedIndex];
+                if (!selectedOption || selectedOption.value === "") {
+                    livePriceDisplay.textContent = "0.00";
+                    durationBadge.textContent = "Wybierz samochód...";
+                    return;
+                }
+
+                // Pobieramy tekst opcji (np. "Toyota Corolla (WI12345) - 150.00 zł/dobę")
+                const optionText = selectedOption.text;
+
+                // Szukamy ceny (obsługuje formaty: 150, 150.00, 150,00)
+                const priceMatch = optionText.match(/([\d,.]+)\s*zł\/dobę/);
+
+                if (!priceMatch) {
+                    livePriceDisplay.textContent = "0.00";
+                    durationBadge.textContent = "Nie znaleziono ceny dla tego auta.";
+                    return;
+                }
+
+                const pricePerDay = parseFloat(priceMatch[1].replace(',', '.'));
+                const startVal = startDateInput.value;
+                const endVal = endDateInput.value;
+
+                // Jeśli daty są jeszcze niewypełnione
+                if (!startVal || !endVal) {
+                    livePriceDisplay.textContent = "0.00";
+                    durationBadge.textContent = "Uzupełnij daty rezerwacji...";
+                    return;
+                }
+
+                const startDate = new Date(startVal);
+                const endDate = new Date(endVal);
+
+                // Sprawdzanie chronologii
+                if (endDate <= startDate) {
+                    livePriceDisplay.textContent = "0.00";
+                    durationBadge.textContent = "⚠️ Data zwrotu musi być późniejsza niż startu!";
+                    durationBadge.classList.add("text-danger");
+                    return;
+                }
+                durationBadge.classList.remove("text-danger");
+
+                // Obliczanie różnicy czasu i zaokrąglanie w górę (Math.ceil)
+                const differenceInTime = endDate.getTime() - startDate.getTime();
+                const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+                const finalDays = differenceInDays <= 0 ? 1 : differenceInDays;
+
+                const totalPrice = finalDays * pricePerDay;
+
+                // Wyświetlanie sformatowanej ceny
+                livePriceDisplay.textContent = totalPrice.toFixed(2);
+                durationBadge.textContent = `Czas trwania: ${finalDays} ${finalDays === 1 ? 'doba' : 'dni'} (x ${pricePerDay.toFixed(2)} zł)`;
+            }
+
+            // Podpięcie zdarzeń pod wykryte elementy
+            if (carSelect) carSelect.addEventListener("change", calculateLivePrice);
+            if (startDateInput) startDateInput.addEventListener("change", calculateLivePrice);
+            if (endDateInput) endDateInput.addEventListener("change", calculateLivePrice);
+
+            // Wywołanie startowe
+            calculateLivePrice();
+        });
+    </script>
     <partial name="_ValidationScriptsPartial" />
 }

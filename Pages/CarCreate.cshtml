@@ -53,9 +53,9 @@
                         </div>
 
                         <div class="col-12">
-                            <label asp-for="NewCar.ImageUrl" class="form-label fw-semibold">Ścieżka do zdjęcia (opcjonalnie)</label>
-                            <input asp-for="NewCar.ImageUrl" class="form-control" placeholder="/images/cars/auto.jpg" />
-                            <small class="text-muted">Jeśli pozostawisz puste, system przypisze domyślną grafikę awaryjną.</small>
+                            <label class="form-label fw-semibold">Wybierz zdjęcie z komputera (opcjonalnie)</label>
+                            <input type="file" name="CarImageFile" class="form-control" accept="image/*" />
+                            <small class="text-muted">Zdjęcie zostanie skopiowane do folderu projektu. Jeśli nie wybierzesz nic, system przypisze domyślną grafikę.</small>
                         </div>
                     </div>
 
