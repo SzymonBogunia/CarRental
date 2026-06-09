@@ -1,6 +1,4 @@
 using CarRental.Data;
-using CarRental.Data;
-using CarRental.Models;
 using CarRental.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

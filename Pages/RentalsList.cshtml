@@ -1,0 +1,206 @@
+﻿@page
+@model RentalsListModel
+@{
+    ViewData["Title"] = "Lista Rezerwacji";
+}
+
+<div class="container my-5">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            ⚠️ @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">📋 Rejestr Wypożyczeń</h2>
+            <p class="text-muted mb-0">Zarządzanie rezerwacjami w pop-upach</p>
+        </div>
+        <a asp-page="/RentalCreate" class="btn btn-warning shadow-sm fw-bold text-dark">➕ Nowa Rezerwacja</a>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            @if (!Model.Rentals.Any())
+            {
+                <div class="text-center py-5">📭 <h5 class="text-muted mt-3">Brak rezerwacji</h5></div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-uppercase fs-7 fw-bold text-muted">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>🚗 Samochód</th>
+                                <th>👤 Klient</th>
+                                <th>📅 Okres Wynajmu</th>
+                                <th>💰 Koszt</th>
+                                <th class="text-center pe-4">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rental in Model.Rentals)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-secondary">#@rental.Id</td>
+                                    <td><div class="fw-bold text-dark">@rental.Car?.Brand @rental.Car?.Model</div></td>
+                                    <td><div class="fw-semibold">@rental.Customer?.FirstName @rental.Customer?.LastName</div></td>
+                                    <td>
+                                        <small class="text-success d-block">Od: @rental.StartDate.ToString("dd.MM.yyyy - HH:00")</small>
+                                        <small class="text-danger d-block">Do: @rental.EndDate.ToString("dd.MM.yyyy - HH:00")</small>
+                                    </td>
+                                    <td><span class="fw-bold">@rental.TotalPrice.ToString("N2") zł</span></td>
+
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsRentalModal"
+                                                    data-id="@rental.Id" data-car="@rental.Car?.Brand @rental.Car?.Model" data-carreg="@rental.Car?.RegistrationNumber"
+                                                    data-cust="@rental.Customer?.FirstName @rental.Customer?.LastName" data-custident="@(string.IsNullOrEmpty(rental.Customer?.Pesel) ? "Paszport: " + rental.Customer?.PassportNumber : "PESEL: " + rental.Customer?.Pesel)"
+                                                    data-start="@rental.StartDate.ToString("dd.MM.yyyy - HH:00")" data-end="@rental.EndDate.ToString("dd.MM.yyyy - HH:00")" data-total="@rental.TotalPrice.ToString("N2")">
+                                                🔍
+                                            </button>
+
+                                            <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editRentalModal"
+                                                    data-id="@rental.Id" data-carid="@rental.CarId" data-custid="@rental.CustomerId"
+                                                    data-start="@rental.StartDate.ToString("yyyy-MM-ddTHH:00")" data-end="@rental.EndDate.ToString("yyyy-MM-ddTHH:00")">
+                                                ✏️
+                                            </button>
+
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRentalModal"
+                                                    data-id="@rental.Id">
+                                                ❌
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailsRentalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title fw-bold">📋 Szczegóły Wypożyczenia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between py-3"><span>KOD umowy:</span> <strong id="detRentId"></strong></li>
+                    <li class="list-group-item d-flex justify-content-between py-3"><span>🚗 Pojazd:</span> <span id="detRentCar" class="fw-bold"></span></li>
+                    <li class="list-group-item d-flex justify-content-between py-3"><span>🪪 Rejestracja:</span> <span id="detRentCarReg" class="badge bg-light text-dark border"></span></li>
+                    <li class="list-group-item d-flex justify-content-between py-3"><span>👤 Kierowca:</span> <span id="detRentCust" class="fw-semibold"></span></li>
+                    <li class="list-group-item d-flex justify-content-between py-3"><span>🆔 Dokument:</span> <small id="detRentCustIdent" class="text-muted"></small></li>
+                    <li class="list-group-item d-flex justify-content-between py-3"><span>📅 Start:</span> <span id="detRentStart" class="text-success small fw-bold"></span></li>
+                    <li class="list-group-item d-flex justify-content-between py-3"><span>🏳️ Zwrot:</span> <span id="detRentEnd" class="text-danger small fw-bold"></span></li>
+                    <li class="list-group-item d-flex justify-content-between py-3 bg-light"><strong>💰 Do zapłaty:</strong> <strong id="detRentTotal" class="fs-5 text-dark"></strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editRentalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold">✏️ Modyfikacja Rezerwacji</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="post" asp-page-handler="Edit">
+                    <input type="hidden" asp-for="RentalToEdit.Id" id="editRentId" />
+                    <div class="mb-3">
+                        <label asp-for="RentalToEdit.CarId" class="form-label fw-semibold">🚗 Zmień samochód</label>
+                        <select asp-for="RentalToEdit.CarId" id="editRentCarId" asp-items="Model.CarOptions" class="form-select" required></select>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="RentalToEdit.CustomerId" class="form-label fw-semibold">👤 Zmień klienta</label>
+                        <select asp-for="RentalToEdit.CustomerId" id="editRentCustId" asp-items="Model.CustomerOptions" class="form-select" required></select>
+                    </div>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label asp-for="RentalToEdit.StartDate" class="form-label small fw-semibold">Data startu</label>
+                            <input asp-for="RentalToEdit.StartDate" id="editRentStartInput" type="datetime-local" step="3600" class="form-control" required />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="RentalToEdit.EndDate" class="form-label small fw-semibold">Data zwrotu</label>
+                            <input asp-for="RentalToEdit.EndDate" id="editRentEndInput" type="datetime-local" step="3600" class="form-control" required />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning fw-bold w-100">Zapisz korektę umowy</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteRentalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-body p-4 text-center">
+                <div class="display-5 text-danger mb-3">⚠️</div>
+                <h5 class="fw-bold mb-2">Anulować rezerwację?</h5>
+                <p class="text-muted small">Tej operacji nie będzie można cofnąć w systemie.</p>
+                <form method="post" asp-page-handler="Delete">
+                    <input type="hidden" asp-for="RentalIdToDelete" id="deleteRentId" />
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <button type="button" class="btn btn-light border w-50" data-bs-dismiss="modal">Nie</button>
+                        <button type="submit" class="btn btn-danger fw-bold w-50">Tak, usuń</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- JS: Podgląd szczegółów ---
+        const detailsRentalModal = document.getElementById('detailsRentalModal');
+        if (detailsRentalModal) {
+            detailsRentalModal.addEventListener('show.bs.modal', function (event) {
+                const b = event.relatedTarget;
+                document.getElementById('detRentId').textContent = `#${b.getAttribute('data-id')}`;
+                document.getElementById('detRentCar').textContent = b.getAttribute('data-car');
+                document.getElementById('detRentCarReg').textContent = b.getAttribute('data-carreg');
+                document.getElementById('detRentCust').textContent = b.getAttribute('data-cust');
+                document.getElementById('detRentCustIdent').textContent = b.getAttribute('data-custident');
+                document.getElementById('detRentStart').textContent = b.getAttribute('data-start');
+                document.getElementById('detRentEnd').textContent = b.getAttribute('data-end');
+                document.getElementById('detRentTotal').textContent = `${b.getAttribute('data-total')} zł`;
+            });
+        }
+
+        // --- JS: Edycja rezerwacji ---
+        const editRentalModal = document.getElementById('editRentalModal');
+        if (editRentalModal) {
+            editRentalModal.addEventListener('show.bs.modal', function (event) {
+                const b = event.relatedTarget;
+                document.getElementById('editRentId').value = b.getAttribute('data-id');
+                document.getElementById('editRentCarId').value = b.getAttribute('data-carid');
+                document.getElementById('editRentCustId').value = b.getAttribute('data-custid');
+                document.getElementById('editRentStartInput').value = b.getAttribute('data-start');
+                document.getElementById('editRentEndInput').value = b.getAttribute('data-end');
+            });
+        }
+
+        // --- JS: Usuwanie ---
+        const deleteRentalModal = document.getElementById('deleteRentalModal');
+        if (deleteRentalModal) {
+            deleteRentalModal.addEventListener('show.bs.modal', function (event) {
+                const b = event.relatedTarget;
+                document.getElementById('deleteRentId').value = b.getAttribute('data-id');
+            });
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}
