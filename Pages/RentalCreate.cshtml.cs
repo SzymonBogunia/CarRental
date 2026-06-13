@@ -28,6 +28,8 @@ namespace CarRental.Pages
         [BindProperty]
         public int RentalIdToDelete { get; set; }
 
+        
+
         private async Task LoadDropdownsAsync()
         {
             CarOptions = await _context.Cars
@@ -59,9 +61,11 @@ namespace CarRental.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // 1. Zerujemy minuty i sekundy (to ju¿ mamy z poprzedniego kroku)
+            
             NewRental.StartDate = new DateTime(NewRental.StartDate.Year, NewRental.StartDate.Month, NewRental.StartDate.Day, NewRental.StartDate.Hour, 0, 0);
             NewRental.EndDate = new DateTime(NewRental.EndDate.Year, NewRental.EndDate.Month, NewRental.EndDate.Day, NewRental.EndDate.Hour, 0, 0);
+
+            var now = DateTime.Now;
 
             // 2. Podstawowa walidacja chronologii dat
             if (NewRental.EndDate <= NewRental.StartDate)
@@ -109,6 +113,26 @@ namespace CarRental.Pages
 
             //Zapis 
             _context.Rentals.Add(NewRental);
+
+            if (NewRental.StartDate <= now && NewRental.EndDate > now)
+            {
+                //dodawanie zaczetej ale nie skonczonej
+                NewRental.Status = RentalStatus.Active;
+                car.Status = CarStatus.Rented;
+            }
+            else if (NewRental.StartDate > now)
+            {
+                //dodawanie zaplanowanej
+                NewRental.Status = RentalStatus.Planned;
+                car.Status = CarStatus.Available;
+            }
+            else if (NewRental.EndDate <= now)
+            {
+                // dodawanie zaleg³ej (skonczonej)
+                NewRental.Status = RentalStatus.ToBeSettled;
+                car.Status = CarStatus.Rented;
+            }
+
             await _context.SaveChangesAsync();
 
             return RedirectToPage("/RentalsList");

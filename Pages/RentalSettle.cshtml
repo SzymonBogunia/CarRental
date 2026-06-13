@@ -1,0 +1,145 @@
+﻿@page
+@model CarRental.Pages.RentalSettleModel
+@{
+    ViewData["Title"] = "Rozliczenie Wypożyczenia";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Nagłówek i powrót -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-dark mb-0">💵 Rozliczenie Umowy #@Model.Rental.Id</h2>
+                    <p class="text-muted mb-0">Zakończenie wypożyczenia i kalkulacja kosztów ostatecznych</p>
+                </div>
+                <a asp-page="/RentalsList" class="btn btn-outline-secondary shadow-sm fw-semibold">⬅️ Powrót do listy</a>
+            </div>
+
+            <!-- Podsumowanie rezerwacji -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="fw-bold mb-0 text-dark">📋 Dane bazowe umowy</h5>
+                </div>
+                <div class="card-body bg-light-subtle">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Pojazd</small>
+                            <strong class="fs-6">@Model.Rental.Car?.Brand @Model.Rental.Car?.Model (@Model.Rental.Car?.RegistrationNumber)</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Klient</small>
+                            <strong class="fs-6">@Model.Rental.Customer?.FirstName @Model.Rental.Customer?.LastName</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Planowany okres</small>
+                            <span>@Model.Rental.StartDate.ToString("dd.MM.yyyy HH:00") — @Model.Rental.EndDate.ToString("dd.MM.yyyy HH:00")</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Koszt podstawowy wynajmu</small>
+                            <span class="fw-bold text-primary fs-5" id="basePrice" data-value="@Model.Rental.TotalPrice">@Model.Rental.TotalPrice.ToString("N2") zł</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formularz zwrotu i kar/dopłat -->
+            <div class="card border-0 shadow border-top border-warning border-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold text-dark mb-4">⚙️ Protokoł Zwrotu & Koszty Dodatkowe</h4>
+
+                    <form method="post">
+                        <input type="hidden" asp-for="SettleData.RentalId" value="@Model.Rental.Id" />
+
+                        <!-- Status końcowy / Uwagi -->
+                        <div class="mb-4">
+                            <label asp-for="SettleData.Comments" class="form-label fw-bold">📝 Uwagi do stanu pojazdu / Protokołu</label>
+                            <textarea asp-for="SettleData.Comments" class="form-control" rows="3" placeholder="np. Auto zwrócone czyste, brak uwag lub opis uszkodzeń..."></textarea>
+                        </div>
+
+                        <hr class="my-4">
+                        <h5 class="fw-bold text-danger mb-3">⚠️ Naliczanie dodatkowych opłat (opcjonalnie)</h5>
+
+                        <div class="row g-3">
+                            <!-- Brudne auto -->
+                            <div class="col-md-4">
+                                <label asp-for="SettleData.CleaningFee" class="form-label small fw-semibold">🧹 Brudne auto / Czyszczenie (zł)</label>
+                                <input asp-for="SettleData.CleaningFee" type="number" step="0.01" min="0" class="form-control cost-calc" id="feeCleaning" value="0.00" />
+                            </div>
+
+                            <!-- Brak paliwa -->
+                            <div class="col-md-4">
+                                <label asp-for="SettleData.FuelDeficitFee" class="form-label small fw-semibold">⛽ Brakujące paliwo / Tankowanie (zł)</label>
+                                <input asp-for="SettleData.FuelDeficitFee" type="number" step="0.01" min="0" class="form-control cost-calc" id="feeFuel" value="0.00" />
+                            </div>
+
+                            <!-- Szkody / Zarysowania -->
+                            <div class="col-md-4">
+                                <label asp-for="SettleData.DamageFee" class="form-label small fw-semibold">💥 Zarysowania / Szkody (zł)</label>
+                                <input asp-for="SettleData.DamageFee" type="number" step="0.01" min="0" class="form-control cost-calc" id="feeDamage" value="0.00" />
+                            </div>
+                        </div>
+
+                        <!-- dynamiczne podsumowanie finansowe -->
+                        <div class="card bg-dark text-white border-0 p-4 my-4 rounded-3 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-uppercase text-muted small fw-bold mb-1">Ostateczna kwota do zapłaty</h6>
+                                    <span class="fs-7 text-warning" id="calcBreakdown">Koszt bazowy: @Model.Rental.TotalPrice.ToString("N2") zł</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fs-2 fw-bold text-warning" id="finalPriceDisplay">@Model.Rental.TotalPrice.ToString("N2") zł</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Przycisk zatwierdzenia -->
+                        <button type="submit" class="btn btn-success btn-lg fw-bold w-100 shadow">
+                            💾 Zamknij umowę i zarejestruj wpłatę
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const basePrice = parseFloat(document.getElementById("basePrice").getAttribute("data-value").replace(',', '.'));
+            const feeCleaning = document.getElementById("feeCleaning");
+            const feeFuel = document.getElementById("feeFuel");
+            const feeDamage = document.getElementById("feeDamage");
+            const finalPriceDisplay = document.getElementById("finalPriceDisplay");
+            const calcBreakdown = document.getElementById("calcBreakdown");
+
+            function calculateTotal() {
+                const cleaning = parseFloat(feeCleaning.value) || 0;
+                const fuel = parseFloat(feeFuel.value) || 0;
+                const damage = parseFloat(feeDamage.value) || 0;
+
+                const total = basePrice + cleaning + fuel + damage;
+
+                // Formatowanie do waluty zł
+                finalPriceDisplay.textContent = total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " zł";
+
+                // Aktualizacja małego podpisu rozbicia cenowego
+                let breakdownText = `Baza: ${basePrice.toFixed(2)} zł`;
+                if (cleaning > 0) breakdownText += ` + Czyszczenie: ${cleaning.toFixed(2)} zł`;
+                if (fuel > 0) breakdownText += ` + Paliwo: ${fuel.toFixed(2)} zł`;
+                if (damage > 0) breakdownText += ` + Szkody: ${damage.toFixed(2)} zł`;
+                calcBreakdown.textContent = breakdownText;
+            }
+
+            // Podepnij zdarzenie pod każde pole wpisywania kosztów
+            document.querySelectorAll(".cost-calc").forEach(input => {
+                input.addEventListener("input", calculateTotal);
+            });
+        });
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

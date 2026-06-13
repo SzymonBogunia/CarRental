@@ -5,27 +5,82 @@
 }
 
 <div class="container my-5">
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
-            ⚠️ @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+ 
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark mb-0">📋 Rejestr Wypożyczeń</h2>
-            <p class="text-muted mb-0">Zarządzanie rezerwacjami w pop-upach</p>
+            <p class="text-muted mb-0">Zarządzanie rezerwacjami w panelu kierownika</p>
         </div>
         <a asp-page="/RentalCreate" class="btn btn-warning shadow-sm fw-bold text-dark">➕ Nowa Rezerwacja</a>
     </div>
 
-    <div class="card shadow border-0">
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white p-3" style="cursor: pointer;" onclick="switchRentalTab('planned')">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.8rem; opacity: 0.8;">Zaplanowane</h6>
+                        <span class="fs-3 fw-bold">@Model.PlannedRentals.Count</span>
+                    </div>
+                    <div class="fs-1" style="opacity: 0.3;">📅</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white p-3" style="cursor: pointer;" onclick="switchRentalTab('active')">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.8rem; opacity: 0.8;">W toku (Aktywne)</h6>
+                        <span class="fs-3 fw-bold">@Model.ActiveRetnals.Count</span>
+                    </div>
+                    <div class="fs-1" style="opacity: 0.3;">🚗</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            @{
+                var hasToBeSettled = Model.ToBeSettledRentals.Any();
+                var alertBg = hasToBeSettled ? "bg-warning text-dark" : "bg-light text-muted border";
+            }
+            <div class="card border-0 shadow-sm @alertBg p-3" style="cursor: pointer;" onclick="switchRentalTab('settle')">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.8rem; opacity: 0.8;">Do rozliczenia</h6>
+                        <span class="fs-3 fw-bold">@Model.ToBeSettledRentals.Count</span>
+                        @if (hasToBeSettled)
+                        {
+                            <span class="badge bg-danger ms-2" style="font-size: 0.75rem;">Akcja!</span>
+                        }
+                    </div>
+                    <div class="fs-1" style="opacity: 0.3;">⚠️</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-secondary text-white p-3" style="cursor: pointer;" onclick="switchRentalTab('finished')">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.8rem; opacity: 0.8;">Historia / Archiwum</h6>
+                        <span class="fs-3 fw-bold">@Model.FinishedRentals.Count</span>
+                    </div>
+                    <div class="fs-1" style="opacity: 0.3;">✅</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="plannedSection" class="rental-section card shadow border-0 mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="fw-bold mb-0 text-primary">Lista rezerwacji zaplanowanych</h5>
+        </div>
         <div class="card-body p-0">
-            @if (!Model.Rentals.Any())
+            @if (!Model.PlannedRentals.Any())
             {
-                <div class="text-center py-5">📭 <h5 class="text-muted mt-3">Brak rezerwacji</h5></div>
+                <div class="text-center py-5">📭 <h5 class="text-muted mt-3">Brak zaplanowanych rezerwacji</h5></div>
             }
             else
             {
@@ -42,7 +97,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var rental in Model.Rentals)
+                            @foreach (var rental in Model.PlannedRentals)
                             {
                                 <tr>
                                     <td class="ps-4 fw-bold text-secondary">#@rental.Id</td>
@@ -53,7 +108,6 @@
                                         <small class="text-danger d-block">Do: @rental.EndDate.ToString("dd.MM.yyyy - HH:00")</small>
                                     </td>
                                     <td><span class="fw-bold">@rental.TotalPrice.ToString("N2") zł</span></td>
-
                                     <td class="text-center pe-4">
                                         <div class="d-flex justify-content-center gap-2">
                                             <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsRentalModal"
@@ -62,18 +116,198 @@
                                                     data-start="@rental.StartDate.ToString("dd.MM.yyyy - HH:00")" data-end="@rental.EndDate.ToString("dd.MM.yyyy - HH:00")" data-total="@rental.TotalPrice.ToString("N2")">
                                                 🔍
                                             </button>
-
                                             <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editRentalModal"
                                                     data-id="@rental.Id" data-carid="@rental.CarId" data-custid="@rental.CustomerId"
                                                     data-start="@rental.StartDate.ToString("yyyy-MM-ddTHH:00")" data-end="@rental.EndDate.ToString("yyyy-MM-ddTHH:00")">
                                                 ✏️
                                             </button>
-
                                             <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRentalModal"
                                                     data-id="@rental.Id">
                                                 ❌
                                             </button>
                                         </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="activeSection" class="rental-section card shadow border-0 mb-4 d-none">
+        <div class="card-header bg-light py-3">
+            <h5 class="fw-bold mb-0 text-success">Lista rezerwacji aktywnych</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (!Model.ActiveRetnals.Any())
+            {
+                <div class="text-center py-5">📭 <h5 class="text-muted mt-3">Brak samochodów w trasie</h5></div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-uppercase fs-7 fw-bold text-muted">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>🚗 Samochód</th>
+                                <th>👤 Klient</th>
+                                <th>📅 Okres Wynajmu</th>
+                                <th>💰 Koszt</th>
+                                <th>Status</th>
+                                <th class="text-center pe-4">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rental in Model.ActiveRetnals)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-secondary">#@rental.Id</td>
+                                    <td><div class="fw-bold text-dark">@rental.Car?.Brand @rental.Car?.Model</div></td>
+                                    <td><div class="fw-semibold">@rental.Customer?.FirstName @rental.Customer?.LastName</div></td>
+                                    <td>
+                                        <small class="text-success d-block">Od: @rental.StartDate.ToString("dd.MM.yyyy - HH:00")</small>
+                                        <small class="text-danger d-block">Do: @rental.EndDate.ToString("dd.MM.yyyy - HH:00")</small>
+                                    </td>
+                                    <td><span class="fw-bold">@rental.TotalPrice.ToString("N2") zł</span></td>
+                                    <td><span class="badge bg-success">W trasie</span></td>
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsRentalModal"
+                                                    data-id="@rental.Id" data-car="@rental.Car?.Brand @rental.Car?.Model" data-carreg="@rental.Car?.RegistrationNumber"
+                                                    data-cust="@rental.Customer?.FirstName @rental.Customer?.LastName" data-custident="@(string.IsNullOrEmpty(rental.Customer?.Pesel) ? "Paszport: " + rental.Customer?.PassportNumber : "PESEL: " + rental.Customer?.Pesel)"
+                                                    data-start="@rental.StartDate.ToString("dd.MM.yyyy - HH:00")" data-end="@rental.EndDate.ToString("dd.MM.yyyy - HH:00")" data-total="@rental.TotalPrice.ToString("N2")">
+                                                🔍
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editRentalModal"
+                                                    data-id="@rental.Id" data-carid="@rental.CarId" data-custid="@rental.CustomerId"
+                                                    data-start="@rental.StartDate.ToString("yyyy-MM-ddTHH:00")" data-end="@rental.EndDate.ToString("yyyy-MM-ddTHH:00")">
+                                                ✏️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="settleSection" class="rental-section card shadow border-0 mb-4 d-none">
+        <div class="card-header bg-warning py-3 text-dark">
+            <h5 class="fw-bold mb-0">⚠️ Rezerwacje zakończone – oczekujące na rozliczenie</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (!Model.ToBeSettledRentals.Any())
+            {
+                <div class="text-center py-5">🍃 <h5 class="text-muted mt-3">Wszystkie zwroty są rozliczone!</h5></div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-uppercase fs-7 fw-bold text-muted">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>🚗 Samochód</th>
+                                <th>👤 Klient</th>
+                                <th>📅 Termin minął</th>
+                                <th>💰 Kwota bazowa</th>
+                                <th class="text-center pe-4">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rental in Model.ToBeSettledRentals)
+                            {
+                                <tr class="table-warning">
+                                    <td class="ps-4 fw-bold text-dark">#@rental.Id</td>
+                                    <td><div class="fw-bold text-dark">@rental.Car?.Brand @rental.Car?.Model</div></td>
+                                    <td><div class="fw-semibold">@rental.Customer?.FirstName @rental.Customer?.LastName</div></td>
+                                    <td>
+                                        <span class="text-danger fw-bold">Koniec: @rental.EndDate.ToString("dd.MM.yyyy - HH:00")</span>
+                                    </td>
+                                    <td><span class="fw-bold">@rental.TotalPrice.ToString("N2") zł</span></td>
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a asp-page="/RentalSettle" asp-route-id="@rental.Id" class="btn btn-sm btn-success fw-bold px-3">💵 Rozlicz</a>
+                                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsRentalModal"
+                                                    data-id="@rental.Id" data-car="@rental.Car?.Brand @rental.Car?.Model" data-carreg="@rental.Car?.RegistrationNumber"
+                                                    data-cust="@rental.Customer?.FirstName @rental.Customer?.LastName" data-custident="@(string.IsNullOrEmpty(rental.Customer?.Pesel) ? "Paszport: " + rental.Customer?.PassportNumber : "PESEL: " + rental.Customer?.Pesel)"
+                                                    data-start="@rental.StartDate.ToString("dd.MM.yyyy - HH:00")" data-end="@rental.EndDate.ToString("dd.MM.yyyy - HH:00")" data-total="@rental.TotalPrice.ToString("N2")">
+                                                🔍
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="finishedSection" class="rental-section card shadow border-0 mb-4 d-none">
+        <div class="card-header bg-light py-3">
+            <h5 class="fw-bold mb-0 text-secondary">✅ Archiwum rezerwacji zakończonych i anulowanych</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (!Model.FinishedRentals.Any())
+            {
+                <div class="text-center py-5">📭 <h5 class="text-muted mt-3">Archiwum jest puste</h5></div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-uppercase fs-7 fw-bold text-muted">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>🚗 Samochód</th>
+                                <th>👤 Klient</th>
+                                <th>📅 Okres Wynajmu</th>
+                                <th>💰 Koszt</th>
+                                <th>Status końcowy</th>
+                                <th class="text-center pe-4">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rental in Model.FinishedRentals)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-secondary">#@rental.Id</td>
+                                    <td><div class="fw-bold text-muted">@rental.Car?.Brand @rental.Car?.Model</div></td>
+                                    <td><div class="fw-semibold text-muted">@rental.Customer?.FirstName @rental.Customer?.LastName</div></td>
+                                    <td>
+                                        <small class="text-muted d-block">Od: @rental.StartDate.ToString("dd.MM.yyyy")</small>
+                                        <small class="text-muted d-block">Do: @rental.EndDate.ToString("dd.MM.yyyy")</small>
+                                    </td>
+                                    <td><span class="fw-bold text-muted">@rental.TotalPrice.ToString("N2") zł</span></td>
+                                    <td>
+                                        @if (rental.Status == CarRental.Models.RentalStatus.Cancelled)
+                                        {
+                                            <span class="badge bg-secondary text-decoration-line-through">Anulowana</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-dark">Rozliczona</span>
+                                        }
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsRentalModal"
+                                                data-id="@rental.Id" data-car="@rental.Car?.Brand @rental.Car?.Model" data-carreg="@rental.Car?.RegistrationNumber"
+                                                data-cust="@rental.Customer?.FirstName @rental.Customer?.LastName" data-custident="@(string.IsNullOrEmpty(rental.Customer?.Pesel) ? "Paszport: " + rental.Customer?.PassportNumber : "PESEL: " + rental.Customer?.Pesel)"
+                                                data-start="@rental.StartDate.ToString("dd.MM.yyyy - HH:00")" data-end="@rental.EndDate.ToString("dd.MM.yyyy - HH:00")" data-total="@rental.TotalPrice.ToString("N2")"
+                                                data-comments="@rental.Comments"
+                                                data-cleaning="@rental.CleaningFee.ToString("N2")"
+                                                data-fuel="@rental.FuelDeficitFee.ToString("N2")"
+                                                data-damage="@rental.DamageFee.ToString("N2")">
+                                            🔍
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -101,11 +335,31 @@
                     <li class="list-group-item d-flex justify-content-between py-3"><span>🆔 Dokument:</span> <small id="detRentCustIdent" class="text-muted"></small></li>
                     <li class="list-group-item d-flex justify-content-between py-3"><span>📅 Start:</span> <span id="detRentStart" class="text-success small fw-bold"></span></li>
                     <li class="list-group-item d-flex justify-content-between py-3"><span>🏳️ Zwrot:</span> <span id="detRentEnd" class="text-danger small fw-bold"></span></li>
-                    <li class="list-group-item d-flex justify-content-between py-3 bg-light"><strong>💰 Do zapłaty:</strong> <strong id="detRentTotal" class="fs-5 text-dark"></strong></li>
-                </ul>
+
+                    <div id="detSettlementSection" class="d-none border-top border-warning border-2 mt-2">
+                    <li class="list-group-item bg-light-subtle py-2 text-center text-uppercase fs-7 fw-bold text-danger">
+                        ⚠️ Naliczone kary i dopłaty
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-2 text-muted small">
+                        <span>🧹 Czyszczenie auta:</span> <span id="detCleaning" class="fw-semibold text-dark"></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-2 text-muted small">
+                        <span>⛽ Brakujące paliwo:</span> <span id="detFuel" class="fw-semibold text-dark"></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-2 text-muted small">
+                        <span>💥 Zarysowania / Szkody:</span> <span id="detDamage" class="fw-semibold text-dark"></span>
+                    </li>
+                    <li class="list-group-item py-3 bg-light-subtle">
+                        <small class="text-muted d-block fw-bold text-uppercase fs-7 mb-1">📝 Uwagi z protokołu:</small>
+                        <span id="detComments" class="fst-italic text-dark small d-block lh-sm"></span>
+                    </li>
             </div>
+
+            <li class="list-group-item d-flex justify-content-between py-3 bg-light"><strong>💰 Suma ostateczna:</strong> <strong id="detRentTotal" class="fs-5 text-dark"></strong></li>
+            </ul>
         </div>
     </div>
+</div>
 </div>
 
 <div class="modal fade" id="editRentalModal" tabindex="-1" aria-hidden="true">
@@ -164,11 +418,13 @@
 
 @section Scripts {
     <script>
-        // --- JS: Podgląd szczegółów ---
+        // --- JS: Podgląd szczegółów (Lupka) ---
         const detailsRentalModal = document.getElementById('detailsRentalModal');
         if (detailsRentalModal) {
             detailsRentalModal.addEventListener('show.bs.modal', function (event) {
                 const b = event.relatedTarget;
+
+                // Podstawowe mapowanie pól
                 document.getElementById('detRentId').textContent = `#${b.getAttribute('data-id')}`;
                 document.getElementById('detRentCar').textContent = b.getAttribute('data-car');
                 document.getElementById('detRentCarReg').textContent = b.getAttribute('data-carreg');
@@ -177,6 +433,28 @@
                 document.getElementById('detRentStart').textContent = b.getAttribute('data-start');
                 document.getElementById('detRentEnd').textContent = b.getAttribute('data-end');
                 document.getElementById('detRentTotal').textContent = `${b.getAttribute('data-total')} zł`;
+
+                // --- MAPOWANIE PROTOKOŁU ROZLICZENIA ---
+                const settlementSection = document.getElementById('detSettlementSection');
+
+                if (b.hasAttribute('data-comments')) {
+                    const comments = b.getAttribute('data-comments') || "Brak dodatkowych uwag wpisanych podczas rozliczenia.";
+                    const cleaning = b.getAttribute('data-cleaning') || "0.00";
+                    const fuel = b.getAttribute('data-fuel') || "0.00";
+                    const damage = b.getAttribute('data-damage') || "0.00";
+
+                    // Wstrzykiwanie tekstu do elementów HTML
+                    document.getElementById('detComments').textContent = comments;
+                    document.getElementById('detCleaning').textContent = cleaning + " zł";
+                    document.getElementById('detFuel').textContent = fuel + " zł";
+                    document.getElementById('detDamage').textContent = damage + " zł";
+
+                    // Usunięcie klasy d-none, aby pokazać sekcję
+                    settlementSection.classList.remove('d-none');
+                } else {
+                    // Jeśli to rezerwacja aktywna/przyszła, ukrywamy sekcję rozliczenia
+                    settlementSection.classList.add('d-none');
+                }
             });
         }
 
@@ -200,6 +478,23 @@
                 const b = event.relatedTarget;
                 document.getElementById('deleteRentId').value = b.getAttribute('data-id');
             });
+        }
+    </script>
+    <script>
+        function switchRentalTab(tabName) {
+            // Ukryj wszystkie sekcje tabel
+            document.querySelectorAll('.rental-section').forEach(el => el.classList.add('d-none'));
+
+            // Pokaż wybraną sekcję tabeli
+            if (tabName === 'planned') {
+                document.getElementById('plannedSection').classList.remove('d-none');
+            } else if (tabName === 'active') {
+                document.getElementById('activeSection').classList.remove('d-none');
+            } else if (tabName === 'settle') {
+                document.getElementById('settleSection').classList.remove('d-none');
+            } else if (tabName === 'finished') {
+                document.getElementById('finishedSection').classList.remove('d-none');
+            }
         }
     </script>
     <partial name="_ValidationScriptsPartial" />

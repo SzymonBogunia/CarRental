@@ -15,7 +15,6 @@ namespace CarRental.Models
         [ForeignKey("CarId")]
         public Car? Car { get; set; }
 
-        // Relacja z klientem
         [Required]
         public int CustomerId { get; set; }
         [ForeignKey("CustomerId")]
@@ -33,12 +32,25 @@ namespace CarRental.Models
 
         [Required]
         public RentalStatus Status { get; set; } = RentalStatus.Planned;
+
+        public bool IsOverdue => Status == RentalStatus.Active && EndDate < DateTime.Now;
+
+        public string? Comments { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal CleaningFee { get; set; } = 0.00m;
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal FuelDeficitFee { get; set; } = 0.00m;
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DamageFee { get; set; } = 0.00m;
+
     }
 
     public enum RentalStatus
     {
         Planned,    
-        Active,     
+        Active,
+        ToBeSettled,
         Completed,  
         Cancelled   
     }

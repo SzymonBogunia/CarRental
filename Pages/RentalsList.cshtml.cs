@@ -1,5 +1,6 @@
 using CarRental.Data;
 using CarRental.Models;
+using CarRental.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,13 +11,20 @@ namespace CarRental.Pages
     public class RentalsListModel : PageModel
     {
         private readonly DataContext _context;
+        private readonly ISystemClock _clock;
 
-        public RentalsListModel(DataContext context)
+        public RentalsListModel(DataContext context, ISystemClock clock)
         {
             _context = context;
+            _clock = clock;
         }
         public List<SelectListItem> CarOptions { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> CustomerOptions { get; set; } = new List<SelectListItem>();
+
+        public List<Rental> PlannedRentals { get; set; } = new List<Rental>();
+        public List<Rental> ActiveRetnals { get; set; } = new List<Rental>();
+        public List<Rental> ToBeSettledRentals { get; set; } = new List<Rental>();
+        public List<Rental> FinishedRentals { get; set; } = new List<Rental>();
 
         [BindProperty]
         public Rental RentalToEdit { get; set; } = new Rental();
@@ -27,16 +35,51 @@ namespace CarRental.Pages
         // Lista rezerwacji, któr¹ przeka¿emy do HTML-a
         public List<Rental> Rentals { get; set; } = new List<Rental>();
 
+
+
         public async Task<IActionResult> OnGetAsync()
         {
             await LoadDropdownsAsync();
-            // Pobieramy rezerwacje z bazy, do³¹czaj¹c dane relacyjne auta i klienta
-            Rentals = await _context.Rentals
+            var now = DateTime.Now;
+            TempData["ErrorMessage"] = $"DEBUG: Aktualny czas w systemie to: {now:dd.MM.yyyy HH:mm}";
+
+            var rentalsToUpdate = await _context.Rentals
+        .Where(r => r.Status == RentalStatus.Planned || r.Status == RentalStatus.Active)
+        .ToListAsync();
+
+            bool anyChanges = false;
+            foreach (var rental in rentalsToUpdate)
+            {
+                // Jeœli by³a zaplanowana, a czas min¹³ -> staje siê Aktywna
+                if (rental.Status == RentalStatus.Planned && rental.StartDate <= now)
+                {
+                    rental.Status = RentalStatus.Active;
+                    anyChanges = true;
+                }
+
+                // Jeœli by³a aktywna, a czas min¹³ -> automatycznie wpada w "Do rozliczenia"
+                if (rental.Status == RentalStatus.Active && rental.EndDate <= now)
+                {
+                    rental.Status = RentalStatus.ToBeSettled;
+                    anyChanges = true;
+                }
+            }
+
+            if (anyChanges)
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            var allRentals = await _context.Rentals
                 .Include(r => r.Car)
                 .Include(r => r.Customer)
-                .OrderByDescending(r => r.StartDate) // Najnowsze rezerwacje na samej górze
+                .OrderByDescending(r => r.StartDate)
                 .ToListAsync();
 
+            PlannedRentals = allRentals.Where(r => r.Status == RentalStatus.Planned).ToList();
+            ActiveRetnals = allRentals.Where(r => r.Status == RentalStatus.Active).ToList();
+            ToBeSettledRentals = allRentals.Where(r => r.Status == RentalStatus.ToBeSettled).ToList();
+            FinishedRentals = allRentals.Where(r => r.Status == RentalStatus.Completed || r.Status == RentalStatus.Cancelled).ToList();
             return Page();
         }
         private async Task LoadDropdownsAsync()

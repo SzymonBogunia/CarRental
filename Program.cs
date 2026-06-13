@@ -1,5 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using CarRental.Data;
+using CarRental.Services;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace CarRental
 {
@@ -19,6 +21,9 @@ namespace CarRental
 
             builder.Services.AddDbContext<DataContext>(options =>
             options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+            var testClock = new TestableClock();
+            testClock.SetTime(new DateTime(2026, 08, 15,12,0,0));
+            builder.Services.AddSingleton<ISystemClock>(testClock);
 
             var app = builder.Build();
 

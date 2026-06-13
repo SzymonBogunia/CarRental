@@ -35,6 +35,8 @@ namespace CarRental.Models
 
         [Required]
         public CarStatus Status { get; set; } = CarStatus.Available;
+
+        
     }
 
     public enum CarStatus
