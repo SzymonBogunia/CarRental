@@ -1,5 +1,6 @@
 using CarRental.Data;
 using CarRental.Services;
+using CarRental.Services;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -18,9 +19,11 @@ namespace CarRental
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddScoped<IRentalService, RentalService>();
             builder.Services.AddDbContext<DataContext>(options =>
             options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddSingleton(TimeProvider.System);
+            
 
             var app = builder.Build();
 
