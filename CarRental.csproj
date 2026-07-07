@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\Nowy folder\**" />
+    <Content Remove="Pages\Nowy folder\**" />
+    <EmbeddedResource Remove="Pages\Nowy folder\**" />
+    <None Remove="Pages\Nowy folder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.16">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,7 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Nowy folder\" />
     <Folder Include="wwwroot\images\cars\" />
   </ItemGroup>
 
