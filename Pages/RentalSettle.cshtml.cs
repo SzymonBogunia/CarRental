@@ -1,67 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-// Zmieñ poni¿sze usingi na zgodne z Twoim projektem (lokalizacja modeli i bazy)
 using CarRental.Models;
+using CarRental.Services;
 
 namespace CarRental.Pages
 {
     public class RentalSettleModel : PageModel
     {
-        private readonly CarRental.Data.DataContext _context; // Twój DBContext
+        private readonly IRentalService _rentalService;
 
-        public RentalSettleModel(CarRental.Data.DataContext context)
+        public RentalSettleModel(IRentalService rentalService)
         {
-            _context = context;
+            _rentalService = rentalService;
         }
 
         [BindProperty]
         public RentalSettleViewModel SettleData { get; set; } = new();
-
         public Rental Rental { get; set; }
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            // ladujemy oryginaln¹ rezerwacjê z bazy RAZEM z powi¹zanym pojazdem (Include)
-            var rentalToUpdate = await _context.Rentals
-                .Include(r => r.Car)
-                .FirstOrDefaultAsync(r => r.Id == SettleData.RentalId);
-
-            if (rentalToUpdate == null)
-            {
-                return NotFound();
-            }
-
-            // dodatkowe oplaty
-            decimal extraFees = SettleData.CleaningFee + SettleData.FuelDeficitFee + SettleData.DamageFee;
-            rentalToUpdate.TotalPrice += extraFees;
-
-
-            rentalToUpdate.Status = RentalStatus.Completed;
-
-            rentalToUpdate.Comments = SettleData.Comments;
-            rentalToUpdate.CleaningFee = SettleData.CleaningFee;
-            rentalToUpdate.FuelDeficitFee = SettleData.FuelDeficitFee;
-            rentalToUpdate.DamageFee = SettleData.DamageFee;
-
-            if (rentalToUpdate.Car != null)
-            {
-                rentalToUpdate.Car.Status = CarStatus.Available;
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Pomyœlnie rozliczono umowê #{rentalToUpdate.Id} i zwolniono pojazd {rentalToUpdate.Car?.Brand}.";
-            }
-            catch (DbUpdateException)
-            {
-                TempData["ErrorMessage"] = "Wyst¹pi³ b³¹d bazy danych przy zamykaniu umowy.";
-                return RedirectToPage("/RentalsList");
-            }
-
-            return RedirectToPage("/RentalsList");
-        }
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -71,20 +26,29 @@ namespace CarRental.Pages
                 return RedirectToPage("/RentalsList");
             }
 
-            Rental = await _context.Rentals
-                .Include(r => r.Car)
-                .Include(r => r.Customer)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (Rental == null)
+            var rental = await _rentalService.GetRentalForSettlementAsync(id.Value);
+            if (rental == null)
             {
                 TempData["ErrorMessage"] = $"Nie znaleziono w bazie rezerwacji o ID #{id}.";
                 return RedirectToPage("/RentalsList");
             }
 
+            Rental = rental;
             SettleData.RentalId = Rental.Id;
-
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            var result = await _rentalService.SettleRentalAsync(SettleData);
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = "Wyst¹pi³ b³¹d podczas zamykania umowy.";
+                return RedirectToPage("/RentalsList");
+            }
+
+            TempData["SuccessMessage"] = result.Message;
+            return RedirectToPage("/RentalsList");
         }
 
         public class RentalSettleViewModel
