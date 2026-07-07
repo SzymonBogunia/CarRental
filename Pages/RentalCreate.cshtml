@@ -71,7 +71,7 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // 1. Próba pobrania po ID, a jeśli nie ma - szukamy po atrybucie name nadawanym przez ASP.NET
+            // próba pobrania po ID, a jeśli nie ma - szukamy po atrybucie name nadawanym przez ASP.NET
             const carSelect = document.getElementById("carSelect") || document.querySelector("[name='NewRental.CarId']");
             const startDateInput = document.getElementById("startDateInput") || document.querySelector("[name='NewRental.StartDate']");
             const endDateInput = document.getElementById("endDateInput") || document.querySelector("[name='NewRental.EndDate']");
@@ -79,8 +79,6 @@
             const livePriceDisplay = document.getElementById("livePriceDisplay");
             const durationBadge = document.getElementById("durationBadge");
 
-            // Mały test diagnostyczny w konsoli przeglądarki (F12 -> Console)
-            console.log("Weryfikacja pól formularza przez JS:", { carSelect, startDateInput, endDateInput });
 
             function calculateLivePrice() {
                 if (!carSelect || !startDateInput || !endDateInput) {
@@ -95,10 +93,10 @@
                     return;
                 }
 
-                // Pobieramy tekst opcji (np. "Toyota Corolla (WI12345) - 150.00 zł/dobę")
+                // Pobieramy tekst opcji
                 const optionText = selectedOption.text;
 
-                // Szukamy ceny (obsługuje formaty: 150, 150.00, 150,00)
+                // Szukamy ceny 
                 const priceMatch = optionText.match(/([\d,.]+)\s*zł\/dobę/);
 
                 if (!priceMatch) {
@@ -130,7 +128,7 @@
                 }
                 durationBadge.classList.remove("text-danger");
 
-                // Obliczanie różnicy czasu i zaokrąglanie w górę (Math.ceil)
+                // Obliczanie różnicy czasu i zaokrąglanie w górę
                 const differenceInTime = endDate.getTime() - startDate.getTime();
                 const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
                 const finalDays = differenceInDays <= 0 ? 1 : differenceInDays;

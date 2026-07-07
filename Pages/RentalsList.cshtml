@@ -418,7 +418,7 @@
 
 @section Scripts {
     <script>
-        // --- JS: Podgląd szczegółów (Lupka) ---
+        // js podglad szczegołów
         const detailsRentalModal = document.getElementById('detailsRentalModal');
         if (detailsRentalModal) {
             detailsRentalModal.addEventListener('show.bs.modal', function (event) {
@@ -434,7 +434,7 @@
                 document.getElementById('detRentEnd').textContent = b.getAttribute('data-end');
                 document.getElementById('detRentTotal').textContent = `${b.getAttribute('data-total')} zł`;
 
-                // --- MAPOWANIE PROTOKOŁU ROZLICZENIA ---
+                //  MAPOWANIE PROTOKOŁU ROZLICZENIA 
                 const settlementSection = document.getElementById('detSettlementSection');
 
                 if (b.hasAttribute('data-comments')) {
@@ -458,7 +458,7 @@
             });
         }
 
-        // --- JS: Edycja rezerwacji ---
+        //JS: Edycja rezerwacji
         const editRentalModal = document.getElementById('editRentalModal');
         if (editRentalModal) {
             editRentalModal.addEventListener('show.bs.modal', function (event) {
@@ -471,7 +471,7 @@
             });
         }
 
-        // --- JS: Usuwanie ---
+        //JS: Usuwanie
         const deleteRentalModal = document.getElementById('deleteRentalModal');
         if (deleteRentalModal) {
             deleteRentalModal.addEventListener('show.bs.modal', function (event) {

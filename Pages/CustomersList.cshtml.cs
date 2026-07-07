@@ -41,11 +41,11 @@ namespace CarRental.Pages
 
         public async Task<IActionResult> OnPostEditAsync()
         {
-            // Rêcznie usuwamy b³¹d "required" dla pola Pesel (analogicznie jak przy dodawaniu)
+            //Rêcznie usuwamy b³¹d "required" dla pola Pesel
             ModelState.Remove("CustomerToEdit.Pesel");
             ModelState.Remove("Customers"); // Ignorujemy walidacjê g³ównej listy wyœwietlanej na stronie
 
-            // Nasza logika biznesowa: albo PESEL, albo Paszport musi byæ podany
+            //albo PESEL, albo Paszport musi byæ podany
             if (string.IsNullOrWhiteSpace(CustomerToEdit.Pesel) && string.IsNullOrWhiteSpace(CustomerToEdit.PassportNumber))
             {
                 ModelState.AddModelError(string.Empty, "Wymagane jest podanie numeru PESEL lub numeru Paszportu!");
@@ -53,11 +53,10 @@ namespace CarRental.Pages
 
             if (!ModelState.IsValid)
             {
-                // Jeœli wyst¹pi³ b³¹d, odœwie¿amy stronê (b³êdy zostan¹ obs³u¿one)
                 return RedirectToPage();
             }
 
-            // Informujemy Entity Framework, ¿e modyfikujemy istniej¹cy obiekt klienta
+            // modyfikacja klienta
             _context.Attach(CustomerToEdit).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
 
             try

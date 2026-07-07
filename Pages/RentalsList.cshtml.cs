@@ -32,7 +32,7 @@ namespace CarRental.Pages
         [BindProperty]
         public int RentalIdToDelete { get; set; }
 
-        // Lista rezerwacji, któr¹ przeka¿emy do HTML-a
+        // Lista rezerwacji, do html
         public List<Rental> Rentals { get; set; } = new List<Rental>();
 
 
@@ -93,7 +93,7 @@ namespace CarRental.Pages
                 .ToListAsync();
         }
 
-        // --- HANDLER EDYCJI ---
+        // edycja
         public async Task<IActionResult> OnPostEditAsync()
         {
             ModelState.Remove("Rentals");
@@ -138,7 +138,7 @@ namespace CarRental.Pages
             return RedirectToPage();
         }
 
-        // --- HANDLER USUWANIA ---
+        // USUWANIE
         public async Task<IActionResult> OnPostDeleteAsync()
         {
             var rental = await _context.Rentals.FindAsync(RentalIdToDelete);

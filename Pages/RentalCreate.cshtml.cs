@@ -67,7 +67,7 @@ namespace CarRental.Pages
 
             var now = DateTime.Now;
 
-            // 2. Podstawowa walidacja chronologii dat
+            //walidacja chronologii dat
             if (NewRental.EndDate <= NewRental.StartDate)
             {
                 ModelState.AddModelError(string.Empty, "Data zakoñczenia musi byæ póŸniejsza ni¿ data rozpoczêcia!");
@@ -111,7 +111,6 @@ namespace CarRental.Pages
             NewRental.TotalPrice = (decimal)days * car.PricePerDay;
             car.Status = CarStatus.Rented;
 
-            //Zapis 
             _context.Rentals.Add(NewRental);
 
             if (NewRental.StartDate <= now && NewRental.EndDate > now)

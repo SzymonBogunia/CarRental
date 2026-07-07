@@ -22,7 +22,7 @@ namespace CarRental.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // 1. £adujemy oryginaln¹ rezerwacjê z bazy RAZEM z powi¹zanym pojazdem (Include)
+            // ladujemy oryginaln¹ rezerwacjê z bazy RAZEM z powi¹zanym pojazdem (Include)
             var rentalToUpdate = await _context.Rentals
                 .Include(r => r.Car)
                 .FirstOrDefaultAsync(r => r.Id == SettleData.RentalId);

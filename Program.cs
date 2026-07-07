@@ -11,7 +11,6 @@ namespace CarRental
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddRazorPages();
 
             builder.Services.AddControllers();
@@ -39,7 +38,7 @@ namespace CarRental
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(); // <-- To ta linijka tworzy stronê /swagger
+                app.UseSwaggerUI(); // swagger
             }
 
             app.UseHttpsRedirection();

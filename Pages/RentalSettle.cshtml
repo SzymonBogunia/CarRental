@@ -7,8 +7,6 @@
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-
-            <!-- Nagłówek i powrót -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="fw-bold text-dark mb-0">💵 Rozliczenie Umowy #@Model.Rental.Id</h2>
@@ -52,7 +50,7 @@
                     <form method="post">
                         <input type="hidden" asp-for="SettleData.RentalId" value="@Model.Rental.Id" />
 
-                        <!-- Status końcowy / Uwagi -->
+                        <!-- Status końcowy/Uwagi -->
                         <div class="mb-4">
                             <label asp-for="SettleData.Comments" class="form-label fw-bold">📝 Uwagi do stanu pojazdu / Protokołu</label>
                             <textarea asp-for="SettleData.Comments" class="form-control" rows="3" placeholder="np. Auto zwrócone czyste, brak uwag lub opis uszkodzeń..."></textarea>

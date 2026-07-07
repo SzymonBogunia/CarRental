@@ -61,7 +61,7 @@ namespace CarRental.Pages
                     }
                 }
 
-                // 4. wgrywanie do wwwroot/uploads/cars
+                // wgrywanie do wwwroot/uploads/cars
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await CarImageFile.CopyToAsync(fileStream);

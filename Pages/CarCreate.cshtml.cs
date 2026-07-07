@@ -36,7 +36,7 @@ namespace CarRental.Pages
             // Domyœlnie nowe auto ustawiamy jako Dostêpne (0)
             NewCar.Status = 0;
 
-            // Log deweloperski do sprawdzenia czy plik w ogóle trafia do backendu
+            //log
             if (CarImageFile != null && CarImageFile.Length > 0)
             {
                 Console.WriteLine($"[DEBUG] Plik odebrany prawid³owo: {CarImageFile.FileName}");
@@ -46,11 +46,11 @@ namespace CarRental.Pages
                     // Generujemy bezpieczn¹ nazwê pliku
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(CarImageFile.FileName);
 
-                    // Budowanie œcie¿ki bezwzglêdnej do folderu w wwwroot
+                    // sciezka do folderu w wwwroot
                     string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "cars");
                     Console.WriteLine($"[DEBUG] Docelowa œcie¿ka na dysku: {uploadsFolder}");
 
-                    // Tworzymy folder na dysku, jeœli jeszcze nie istnieje
+                    // folder (jesli nie istnieje)
                     Directory.CreateDirectory(uploadsFolder);
 
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -61,7 +61,7 @@ namespace CarRental.Pages
                         await CarImageFile.CopyToAsync(fileStream);
                     }
 
-                    // Przypisujemy relatywn¹ œcie¿kê (dostêpn¹ przez HTTP z poziomu przegl¹darki)
+                    // Przypisujemy relatywn¹ œcie¿kê 
                     NewCar.ImageUrl = "/uploads/cars/" + uniqueFileName;
                     Console.WriteLine($"[DEBUG] Zapisano plik pomyœlnie. Œcie¿ka URL w bazie: {NewCar.ImageUrl}");
                 }
