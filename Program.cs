@@ -20,9 +20,7 @@ namespace CarRental
 
             builder.Services.AddDbContext<DataContext>(options =>
             options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-            var testClock = new TestableClock();
-            testClock.SetTime(new DateTime(2026, 08, 15,12,0,0));
-            builder.Services.AddSingleton<ISystemClock>(testClock);
+            builder.Services.AddSingleton(TimeProvider.System);
 
             var app = builder.Build();
 

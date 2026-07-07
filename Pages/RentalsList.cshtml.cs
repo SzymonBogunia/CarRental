@@ -1,6 +1,5 @@
 using CarRental.Data;
 using CarRental.Models;
-using CarRental.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,12 +10,10 @@ namespace CarRental.Pages
     public class RentalsListModel : PageModel
     {
         private readonly DataContext _context;
-        private readonly ISystemClock _clock;
 
-        public RentalsListModel(DataContext context, ISystemClock clock)
+        public RentalsListModel(DataContext context)
         {
             _context = context;
-            _clock = clock;
         }
         public List<SelectListItem> CarOptions { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> CustomerOptions { get; set; } = new List<SelectListItem>();
@@ -41,7 +38,6 @@ namespace CarRental.Pages
         {
             await LoadDropdownsAsync();
             var now = DateTime.Now;
-            TempData["ErrorMessage"] = $"DEBUG: Aktualny czas w systemie to: {now:dd.MM.yyyy HH:mm}";
 
             var rentalsToUpdate = await _context.Rentals
         .Where(r => r.Status == RentalStatus.Planned || r.Status == RentalStatus.Active)
