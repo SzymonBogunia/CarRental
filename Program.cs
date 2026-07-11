@@ -20,6 +20,8 @@ namespace CarRental
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped<IRentalService, RentalService>();
+            builder.Services.AddScoped<ICarService, CarService>();
+
             builder.Services.AddDbContext<DataContext>(options =>
             options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddSingleton(TimeProvider.System);
