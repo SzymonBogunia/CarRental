@@ -2,22 +2,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using CarRental.Data;
 using CarRental.Models;
+using CarRental.Services;
 
 namespace CarRental.Pages
 {
     public class CarCreateModel : PageModel
     {
-        private readonly DataContext _context;
-        private readonly IWebHostEnvironment _environment;
+        private readonly ICarService _carService;
 
-        public CarCreateModel(DataContext context, IWebHostEnvironment environment)
+        public CarCreateModel(ICarService carService)
         {
-            _context = context;
-            _environment = environment;
-        }
-
-        public void OnGet()
-        {
+            _carService = carService;
         }
 
         [BindProperty]
@@ -26,6 +21,8 @@ namespace CarRental.Pages
         [BindProperty]
         public IFormFile? CarImageFile { get; set; }
 
+        public void OnGet() { }
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -33,60 +30,15 @@ namespace CarRental.Pages
                 return Page();
             }
 
-            // Domyœlnie nowe auto ustawiamy jako Dostêpne (0)
-            NewCar.Status = 0;
-
-            //log
-            if (CarImageFile != null && CarImageFile.Length > 0)
+            var result = await _carService.CreateCarAsync(NewCar, CarImageFile);
+            if (!result.Success)
             {
-                Console.WriteLine($"[DEBUG] Plik odebrany prawid³owo: {CarImageFile.FileName}");
-
-                try
-                {
-                    // Generujemy bezpieczn¹ nazwê pliku
-                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(CarImageFile.FileName);
-
-                    // sciezka do folderu w wwwroot
-                    string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "cars");
-                    Console.WriteLine($"[DEBUG] Docelowa œcie¿ka na dysku: {uploadsFolder}");
-
-                    // folder (jesli nie istnieje)
-                    Directory.CreateDirectory(uploadsFolder);
-
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    // Kopiujemy plik z pamiêci podrêcznej do docelowego folderu projektu
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await CarImageFile.CopyToAsync(fileStream);
-                    }
-
-                    // Przypisujemy relatywn¹ œcie¿kê 
-                    NewCar.ImageUrl = "/uploads/cars/" + uniqueFileName;
-                    Console.WriteLine($"[DEBUG] Zapisano plik pomyœlnie. Œcie¿ka URL w bazie: {NewCar.ImageUrl}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[B£¥D] Wyst¹pi³ wyj¹tek podczas zapisu pliku: {ex.Message}");
-                    ModelState.AddModelError(string.Empty, "Wyst¹pi³ problem z zapisem pliku na serwerze.");
-                    return Page();
-                }
-            }
-            else
-            {
-                Console.WriteLine("[DEBUG] Brak pliku (CarImageFile jest NULL lub pusty). Ustawiam placeholder.");
-
-                if (string.IsNullOrWhiteSpace(NewCar.ImageUrl))
-                {
-                    NewCar.ImageUrl = "/images/cars/default-car.jpg";
-                }
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
+                return Page();
             }
 
-            // Zapis danych pojazdu do bazy danych
-            _context.Cars.Add(NewCar);
-            await _context.SaveChangesAsync();
+            return RedirectToPage("/CarList");
 
-            return RedirectToPage("/CarsList");
         }
     }
 }
