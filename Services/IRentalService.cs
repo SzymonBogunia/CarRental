@@ -20,5 +20,6 @@ namespace CarRental.Services
         Task UpdatePlannedAndActiveRentalsStatusAsync();
         Task<(bool Success, string ErrorMessage)> EditRentalAsync(Rental rentalToEdit);
         Task<bool> DeleteRentalAsync(int rentalId);
+        Task<(bool Success, string ErrorMessage, Rental? Rental)> CreateRentalAsync(int carId, int customerId, DateTime startDate, DateTime endDate);
     }
 }

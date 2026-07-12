@@ -18,12 +18,12 @@ namespace CarRental.Services
         public async Task<List<SelectListItem>> GetAvailableCarOptionsAsync()
         {
             return await _context.Cars
-                .Where(c => c.Status == CarStatus.Available)
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = $"{c.Brand} {c.Model} ({c.RegistrationNumber}) - {c.PricePerDay:F2} zł/dobę"
-                }).ToListAsync();
+            .Where(c => c.Status != CarStatus.InService)
+            .Select(c => new SelectListItem
+        {
+            Value = c.Id.ToString(),
+            Text = $"{c.Brand} {c.Model} ({c.RegistrationNumber}) - {c.PricePerDay:F2} zł/dobę"
+        }).ToListAsync();
         }
 
         public async Task<List<SelectListItem>> GetAllCarOptionsAsync()
@@ -48,13 +48,9 @@ namespace CarRental.Services
 
         public async Task<List<SelectListItem>> GetSimpleCustomerOptionsAsync()
         {
-            return await _context.Customers
-                .Select(cust => new SelectListItem
-                {
-                    Value = cust.Id.ToString(),
-                    Text = $"{cust.FirstName} {cust.LastName}"
-                }).ToListAsync();
+            return await GetCustomerOptionsAsync();
         }
+
 
         public async Task<(bool Success, string ErrorMessage)> CreateRentalAsync(Rental newRental)
         {
@@ -87,7 +83,10 @@ namespace CarRental.Services
             else if (newRental.StartDate > now)
             {
                 newRental.Status = RentalStatus.Planned;
-                car.Status = CarStatus.Available;
+                if (car.Status != CarStatus.Rented)
+                {
+                    car.Status = CarStatus.Available;
+                }
             }
             else if (newRental.EndDate <= now)
             {
@@ -213,6 +212,28 @@ namespace CarRental.Services
             _context.Rentals.Remove(rental);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<(bool Success, string ErrorMessage, Rental? Rental)> CreateRentalAsync(int carId, int customerId, DateTime startDate, DateTime endDate)
+        {
+            // na podstawie dto
+            var rental = new Rental
+            {
+                CarId = carId,
+                CustomerId = customerId,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            
+            var result = await CreateRentalAsync(rental);
+
+            if (!result.Success)
+            {
+                return (false, result.ErrorMessage, null);
+            }
+
+            return (true, string.Empty, rental);
         }
 
         // Pomocnicze metody prywatne wewnątrz serwisu

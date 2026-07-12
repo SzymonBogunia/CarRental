@@ -1,28 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CarRental.Data;
 using CarRental.Models;
+using CarRental.Services;
 
 namespace CarRental.Controllers
 {
     [ApiController]
-    
     [Route("api/[controller]")]
     public class CarsController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly ICarService _carService;
 
-        public CarsController(DataContext context)
+        public CarsController(ICarService carService)
         {
-            _context = context;
+            _carService = carService;
         }
 
         // wszystkie samochody
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Car>>> GetCars()
         {
-            var cars = await _context.Cars.ToListAsync();
+            var cars = await _carService.GetAllCarsAsync();
             return Ok(cars);
         }
 
@@ -30,7 +27,7 @@ namespace CarRental.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Car>> GetCar(int id)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var car = await _carService.GetCarByIdAsync(id);
 
             if (car == null)
             {
@@ -44,16 +41,13 @@ namespace CarRental.Controllers
         [HttpPost]
         public async Task<ActionResult<Car>> CreateCar([FromBody] Car car)
         {
-            var existingCar = await _context.Cars
-                .AnyAsync(c => c.RegistrationNumber == car.RegistrationNumber || c.VIN == car.VIN);
+            
+            var result = await _carService.CreateCarAsync(car, null);
 
-            if (existingCar)
+            if (!result.Success)
             {
-                return BadRequest("Samochód o takim numerze rejestracyjnym lub VIN już istnieje w bazie.");
+                return BadRequest(result.ErrorMessage);
             }
-
-            _context.Cars.Add(car);
-            await _context.SaveChangesAsync();
 
             return Ok(car);
         }
@@ -67,60 +61,29 @@ namespace CarRental.Controllers
                 return BadRequest("ID w ścieżce nie zgadza się z ID obiektu.");
             }
 
-            _context.Entry(car).State = EntityState.Modified;
+            var result = await _carService.EditCarAsync(car, null);
 
-            try
+            if (!result.Success)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await _context.Cars.AnyAsync(c => c.Id == id))
-                {
-                    return NotFound($"Nie można zaktualizować. Samochód o ID {id} nie istnieje.");
-                }
-                throw;
+                return NotFound($"Nie można zaktualizować. Samochód o ID {id} nie istnieje.");
             }
 
-            return NoContent(); 
+            return NoContent();
         }
 
         // zmiana statusu 
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> ChangeStatus(int id, [FromBody] CarStatus newStatus)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var result = await _carService.ChangeCarStatusAsync(id, newStatus);
 
-            if (car == null)
+            if (!result.Success)
             {
-                return NotFound($"Nie znaleziono samochodu o ID {id}.");
+                return NotFound(result.ErrorMessage);
             }
 
-            car.Status = newStatus;
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = $"Status samochodu {car.Brand} {car.Model} został zmieniony na {newStatus}.", car });
+            return Ok(new { message = "Status samochodu został pomyślnie zmieniony." });
         }
 
-        // usuniecie auta
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCar(int id)
-        {
-            var car = await _context.Cars.FindAsync(id);
-            if (car == null)
-            {
-                return NotFound($"Nie znaleziono samochodu o ID {id}.");
-            }
-
-            if (car.Status == CarStatus.Rented)
-            {
-                return BadRequest("Nie można usunąć samochodu, który jest aktualnie wypożyczony.");
-            }
-
-            _context.Cars.Remove(car);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = $"Samochód o ID {id} został pomyślnie usunięty z floty." });
-        }
     }
 }

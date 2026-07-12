@@ -17,6 +17,11 @@ namespace CarRental.Services
             _environment = environment;
         }
 
+        public async Task<Car?> GetCarByIdAsync(int id)
+        {
+            return await _context.Cars.FindAsync(id);
+        }
+
         public async Task<List<Car>> GetAllCarsAsync()
         {
             return await _context.Cars.ToListAsync();
@@ -24,8 +29,15 @@ namespace CarRental.Services
 
         public async Task<(bool Success, string ErrorMessage)> CreateCarAsync(Car newCar, IFormFile? imageFile)
         {
-            // Nowe auto domyślnie ustawiamy jako Dostępne
-            newCar.Status = CarStatus.Available; // Możesz zamienić na 0, jeśli nie używasz enuma
+            var existingCar = await _context.Cars
+            .AnyAsync(c => c.RegistrationNumber == newCar.RegistrationNumber || c.VIN == newCar.VIN);
+
+            if (existingCar)
+            {
+                return (false, "Samochód o takim numerze rejestracyjnym lub VIN już istnieje w bazie.");
+            }
+
+            newCar.Status = CarStatus.Available; 
 
             if (imageFile != null && imageFile.Length > 0)
             {
@@ -49,6 +61,16 @@ namespace CarRental.Services
             }
 
             _context.Cars.Add(newCar);
+            await _context.SaveChangesAsync();
+            return (true, string.Empty);
+        }
+
+        public async Task<(bool Success, string ErrorMessage)> ChangeCarStatusAsync(int id, CarStatus newStatus)
+        {
+            var car = await _context.Cars.FindAsync(id);
+            if (car == null) return (false, $"Nie znaleziono samochodu o ID {id}.");
+
+            car.Status = newStatus;
             await _context.SaveChangesAsync();
             return (true, string.Empty);
         }
