@@ -21,6 +21,7 @@ namespace CarRental
 
             builder.Services.AddScoped<IRentalService, RentalService>();
             builder.Services.AddScoped<ICarService, CarService>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
 
             builder.Services.AddDbContext<DataContext>(options =>
             options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

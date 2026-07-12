@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WypozyczalniaSamochodowa.Models
+namespace CarRental.Models
 {
     public class Customer
     {

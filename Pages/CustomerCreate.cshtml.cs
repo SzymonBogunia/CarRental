@@ -1,42 +1,36 @@
-using CarRental.Data;
 using CarRental.Models;
+using CarRental.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using WypozyczalniaSamochodowa.Models;
 
 namespace CarRental.Pages
 {
     public class CustomerCreateModel : PageModel
     {
-        private readonly DataContext _context;
+        private readonly ICustomerService _customerService;
 
-        public CustomerCreateModel(DataContext context)
+        public CustomerCreateModel(ICustomerService customerService)
         {
-            _context = context;
-        }
-
-        public void OnGet()
-        {
+            _customerService = customerService;
         }
 
         [BindProperty]
         public Customer NewCustomer { get; set; } = new Customer();
 
+        public void OnGet()
+        {
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
-            if (string.IsNullOrWhiteSpace(NewCustomer.Pesel) && string.IsNullOrWhiteSpace(NewCustomer.PassportNumber))
-            {
-                // pesel lub nrpaszportu
-                ModelState.AddModelError(string.Empty, "Wymagane jest podanie numeru PESEL (dla obywateli PL) lub numeru Paszportu (dla obcokrajowców)!");
-            }
+            // Przekazujemy odpowiedzialnoœæ za walidacjê i zapis do serwisu
+            var result = await _customerService.CreateCustomerAsync(NewCustomer);
 
-            if (!ModelState.IsValid)
+            if (!result.Success)
             {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
                 return Page();
             }
-
-            _context.Customers.Add(NewCustomer);
-            await _context.SaveChangesAsync();
 
             return RedirectToPage("/CustomersList");
         }

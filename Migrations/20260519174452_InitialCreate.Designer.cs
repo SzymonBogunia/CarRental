@@ -93,7 +93,7 @@ namespace CarRental.Migrations
                     b.ToTable("Rentals");
                 });
 
-            modelBuilder.Entity("WypozyczalniaSamochodowa.Models.Customer", b =>
+            modelBuilder.Entity("CarRental.Models.Customer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -144,7 +144,7 @@ namespace CarRental.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WypozyczalniaSamochodowa.Models.Customer", "Customer")
+                    b.HasOne("CarRental.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)

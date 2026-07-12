@@ -1,7 +1,6 @@
 ﻿using CarRental.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using WypozyczalniaSamochodowa.Models;
 
 namespace CarRental.Models
 {

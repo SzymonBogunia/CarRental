@@ -1,6 +1,6 @@
 ﻿using CarRental.Models;
 using Microsoft.EntityFrameworkCore;
-using WypozyczalniaSamochodowa.Models;
+using CarRental.Models;
 
 namespace CarRental.Data 
 {
