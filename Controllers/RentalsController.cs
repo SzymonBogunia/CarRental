@@ -1,85 +1,51 @@
 ﻿using CarRental.Data;
 using CarRental.Models;
+using CarRental.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CarRental.Data;
-using CarRental.Models;
 
-namespace WypozyczalniaSamochodowa.Controllers
+namespace CarRental.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class RentalsController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IRentalService _rentalService;
 
-        public RentalsController(DataContext context)
+        public RentalsController(IRentalService rentalService)
         {
-            _context = context;
+            _rentalService = rentalService;
         }
 
         // wszystkie rezerwacje
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Rental>>> GetRentals()
         {
-            return await _context.Rentals
-                .Include(r => r.Car)
-                .Include(r => r.Customer)
-                .ToListAsync();
+            var rentals = await _rentalService.GetAllRentalsWithDetailsAsync();
+            return Ok(rentals);
         }
 
         // dodaj rezerwacje
         [HttpPost]
         public async Task<ActionResult<Rental>> CreateRental([FromBody] RentalDto rentalDto)
         {
-            // Walidacja dat
-            if (rentalDto.StartDate >= rentalDto.EndDate)
+            var result = await _rentalService.CreateRentalAsync(
+                rentalDto.CarId,
+                rentalDto.CustomerId,
+                rentalDto.StartDate,
+                rentalDto.EndDate
+            );
+
+            if (!result.Success)
             {
-                return BadRequest("Data rozpoczęcia musi być wcześniejsza niż data zakończenia.");
+                return BadRequest(result.ErrorMessage);
             }
 
-            // Sprawdzenie samochodu
-            var car = await _context.Cars.FindAsync(rentalDto.CarId);
-            if (car == null) return NotFound("Samochód nie istnieje.");
-
-            // Sprawdzenie klienta
-            var customer = await _context.Customers.FindAsync(rentalDto.CustomerId);
-            if (customer == null) return NotFound("Klient nie istnieje.");
-
-            // Algorytm blokowania nakładających się terminów
-            bool isCarOccupied = await _context.Rentals.AnyAsync(r =>
-                r.CarId == rentalDto.CarId &&
-                ((rentalDto.StartDate >= r.StartDate && rentalDto.StartDate < r.EndDate) ||
-                 (rentalDto.EndDate > r.StartDate && rentalDto.EndDate <= r.EndDate) ||
-                 (rentalDto.StartDate <= r.StartDate && rentalDto.EndDate >= r.EndDate)));
-
-            if (isCarOccupied)
-            {
-                return BadRequest("Ten samochód jest już zarezerwowany w podanym terminie.");
-            }
-
-            // Wyliczenie ceny
-            int rentalDays = (rentalDto.EndDate.Date - rentalDto.StartDate.Date).Days;
-            if (rentalDays == 0) rentalDays = 1;
-
-            decimal totalPrice = rentalDays * car.PricePerDay;
-
-            // Tworzenie rezerwacji
-            var rental = new Rental
-            {
-                CarId = rentalDto.CarId,
-                CustomerId = rentalDto.CustomerId,
-                StartDate = rentalDto.StartDate,
-                EndDate = rentalDto.EndDate,
-                TotalPrice = totalPrice
-            };
-
-            _context.Rentals.Add(rental);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Rezerwacja została pomyślnie utworzona.", rental });
+            return Ok(new { message = "Rezerwacja została pomyślnie utworzona.", rental = result.Rental });
         }
+
     }
+
 
     // Klasa pomocnicza do odbierania danych z żądania
     public class RentalDto

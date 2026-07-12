@@ -18,9 +18,14 @@ namespace CarRental.Services
             return await _context.Customers.ToListAsync();
         }
 
+        public async Task<Customer?> GetCustomerByIdAsync(int id)
+        {
+            return await _context.Customers.FindAsync(id);
+        }
+
         public async Task<(bool Success, string ErrorMessage)> CreateCustomerAsync(Customer newCustomer)
         {
-            // Reguła biznesowa: wymagany PESEL lub numer Paszportu
+            // wymagany pesel lub paszport
             if (string.IsNullOrWhiteSpace(newCustomer.Pesel) && string.IsNullOrWhiteSpace(newCustomer.PassportNumber))
             {
                 return (false, "Wymagane jest podanie numeru PESEL (dla obywateli PL) lub numeru Paszportu (dla obcokrajowców)!");
@@ -33,7 +38,7 @@ namespace CarRental.Services
 
         public async Task<(bool Success, string ErrorMessage)> UpdateCustomerAsync(Customer customerToEdit)
         {
-            // Reguła biznesowa przy modyfikacji danych
+            // modyfikacja walidacja paszport/pesel
             if (string.IsNullOrWhiteSpace(customerToEdit.Pesel) && string.IsNullOrWhiteSpace(customerToEdit.PassportNumber))
             {
                 return (false, "Wymagane jest podanie numeru PESEL lub numeru Paszportu!");
@@ -56,17 +61,25 @@ namespace CarRental.Services
             }
         }
 
-        public async Task<bool> DeleteCustomerAsync(int id)
+        public async Task<(bool Success, string ErrorMessage)> DeleteCustomerAsync(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null)
             {
-                return false;
+                return (false, "Klient o podanym ID nie istnieje.");
+            }
+
+            var hasActiveRentals = await _context.Rentals
+                .AnyAsync(r => r.CustomerId == id && r.Status == RentalStatus.Active);
+
+            if (hasActiveRentals)
+            {
+                return (false, "Nie można usunąć klienta, który aktualnie posiada wypożyczone auto.");
             }
 
             _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
-            return true;
+            return (true, string.Empty);
         }
     }
 }

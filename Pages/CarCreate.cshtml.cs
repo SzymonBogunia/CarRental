@@ -37,7 +37,7 @@ namespace CarRental.Pages
                 return Page();
             }
 
-            return RedirectToPage("/CarList");
+            return RedirectToPage("/CarsList");
 
         }
     }

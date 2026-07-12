@@ -1,6 +1,5 @@
 ﻿using CarRental.Models;
 using Microsoft.EntityFrameworkCore;
-using CarRental.Models;
 
 namespace CarRental.Data 
 {
