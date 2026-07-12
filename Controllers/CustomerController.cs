@@ -2,7 +2,6 @@
 using CarRental.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WypozyczalniaSamochodowa.Models;
 
 namespace CarRental.Controllers
 {

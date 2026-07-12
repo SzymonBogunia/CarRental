@@ -1,78 +1,54 @@
-using CarRental.Data;
-using CarRental.Models;
+using CarRental.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using WypozyczalniaSamochodowa.Models;
+using CarRental.Models;
 
 namespace CarRental.Pages
 {
     public class CustomersListModel : PageModel
     {
-        private readonly DataContext _context;
+        private readonly ICustomerService _customerService;
 
-        public CustomersListModel(DataContext context)
+        public CustomersListModel(ICustomerService customerService)
         {
-            _context = context;
+            _customerService = customerService;
         }
 
         public List<Customer> Customers { get; set; } = new List<Customer>();
 
+        [BindProperty]
+        public Customer CustomerToEdit { get; set; } = new Customer();
+
         public async Task OnGetAsync()
         {
-            Customers = await _context.Customers.ToListAsync();
+            Customers = await _customerService.GetAllCustomersAsync();
         }
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
-
-            if (customer != null)
-            {
-                _context.Customers.Remove(customer);
-                await _context.SaveChangesAsync();
-            }
-
+            await _customerService.DeleteCustomerAsync(id);
             return RedirectToPage();
         }
 
-        [BindProperty]
-        public Customer CustomerToEdit { get; set; } = new Customer();
-
         public async Task<IActionResult> OnPostEditAsync()
         {
-            //Rêcznie usuwamy b³¹d "required" dla pola Pesel
+            // Usuwamy weryfikacjê w³aœciwoœci, które obs³ugujemy niestandardowo lub ignorujemy w tym widoku
             ModelState.Remove("CustomerToEdit.Pesel");
-            ModelState.Remove("Customers"); // Ignorujemy walidacjê g³ównej listy wyœwietlanej na stronie
-
-            //albo PESEL, albo Paszport musi byæ podany
-            if (string.IsNullOrWhiteSpace(CustomerToEdit.Pesel) && string.IsNullOrWhiteSpace(CustomerToEdit.PassportNumber))
-            {
-                ModelState.AddModelError(string.Empty, "Wymagane jest podanie numeru PESEL lub numeru Paszportu!");
-            }
+            ModelState.Remove("Customers");
 
             if (!ModelState.IsValid)
             {
                 return RedirectToPage();
             }
 
-            // modyfikacja klienta
-            _context.Attach(CustomerToEdit).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            var result = await _customerService.UpdateCustomerAsync(CustomerToEdit);
 
-            try
+            if (!result.Success)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
-            {
-                if (!_context.Customers.Any(e => e.Id == CustomerToEdit.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
+                // £adujemy dane ponownie, by widok nie rzuci³ b³êdu braku kolekcji przed prze³adowaniem strony
+                Customers = await _customerService.GetAllCustomersAsync();
+                return Page();
             }
 
             return RedirectToPage();
