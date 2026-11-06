@@ -1,12 +1,15 @@
 using CarRental.Data;
 using CarRental.Models;
 using CarRental.Services;
+using CarRental.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRental.Pages
 {
+    [Authorize(Policy = Permissions.CarsView)]
     public class CarsListModel : PageModel
     {
         private readonly ICarService _carService;
@@ -32,6 +35,9 @@ namespace CarRental.Pages
 
         public async Task<IActionResult> OnPostEditAsync()
         {
+            if (!User.HasPermission(Permissions.CarsManage))
+                return Forbid();
+
             ModelState.Remove("Cars");
 
             if (!ModelState.IsValid)

@@ -12,12 +12,26 @@
         <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-3">System Zarządzania</span>
         <h1 class="display-4 fw-black text-dark mb-3" style="letter-spacing: -1px;">Witaj w <span class="text-primary fw-bold">CarRental</span></h1>
         <p class="lead text-muted mx-auto" style="max-width: 600px;">
-            Aplikacja działa prawidłowo. Wybierz jeden z poniższych modułów, aby zarządzać wypożyczalnią samochodów.
+            @if (User.HasPermission(Permissions.CustomersView))
+            {
+                @:Aplikacja działa prawidłowo. Wybierz jeden z poniższych modułów, aby zarządzać wypożyczalnią samochodów.
+            }
+            else
+            {
+                @:Aplikacja działa prawidłowo. Wybierz poniższy moduł, aby przeglądać flotę wypożyczalni.
+            }
         </p>
     </div>
 
+    @if (TempData["SuccessMessage"] is string success)
+    {
+        <div class="alert alert-success text-center">@success</div>
+    }
+
     <!-- Panel Nawigacyjny-->
     <div class="row g-4 justify-content-center">
+        @if (User.HasPermission(Permissions.CarsView))
+        {
         <!-- Kafelek: Flota Pojazdów -->
         <div class="col-md-4 col-sm-6">
             <div class="card h-100 border-0 shadow-sm hover-card transition-all">
@@ -27,13 +41,29 @@
                             <i class="bi bi-car-front-fill fs-3"></i>
                         </div>
                         <h5 class="card-title fw-bold text-dark mb-2">Flota Pojazdów</h5>
-                        <p class="card-text text-muted small">Przeglądaj dostępne samochody, dodawaj nowe pojazdy i zarządzaj ich statusem.</p>
+                        <p class="card-text text-muted small">
+                            @if (User.HasPermission(Permissions.CarsManage))
+                            {
+                                @:Przeglądaj dostępne samochody, dodawaj nowe pojazdy i zarządzaj ich statusem.
+                            }
+                            else if (User.HasPermission(Permissions.CarsViewDetails))
+                            {
+                                @:Przeglądaj samochody, ich dane, ceny i aktualną dostępność.
+                            }
+                            else
+                            {
+                                @:Przeglądaj samochody dostępne w naszej flocie.
+                            }
+                        </p>
                     </div>
                     <a asp-page="/CarsList" class="btn btn-outline-primary w-100 mt-3 stretched-link">Otwórz flotę</a>
                 </div>
             </div>
         </div>
+        }
 
+        @if (User.HasPermission(Permissions.CustomersView))
+        {
         <!-- Kafelek: Lista Klientów -->
         <div class="col-md-4 col-sm-6">
             <div class="card h-100 border-0 shadow-sm hover-card transition-all">
@@ -50,7 +80,10 @@
                 </div>
             </div>
         </div>
+        }
 
+        @if (User.HasPermission(Permissions.RentalsView))
+        {
         <!-- Kafelek: Rezerwacje -->
         <div class="col-md-4 col-sm-6">
             <div class="card h-100 border-0 shadow-sm hover-card transition-all">
@@ -67,6 +100,7 @@
                 </div>
             </div>
         </div>
+        }
     </div>
 </div>
 

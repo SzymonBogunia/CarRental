@@ -2,6 +2,8 @@
 using CarRental.Models;
 using CarRental.Services;
 using Microsoft.AspNetCore.Mvc;
+using CarRental.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRental.Controllers
@@ -19,6 +21,7 @@ namespace CarRental.Controllers
 
         // wszystkie rezerwacje
         [HttpGet]
+        [Authorize(Policy = Permissions.RentalsView)]
         public async Task<ActionResult<IEnumerable<Rental>>> GetRentals()
         {
             var rentals = await _rentalService.GetAllRentalsWithDetailsAsync();
@@ -27,6 +30,7 @@ namespace CarRental.Controllers
 
         // dodaj rezerwacje
         [HttpPost]
+        [Authorize(Policy = Permissions.RentalsManage)]
         public async Task<ActionResult<Rental>> CreateRental([FromBody] RentalDto rentalDto)
         {
             var result = await _rentalService.CreateRentalAsync(

@@ -1,0 +1,51 @@
+@page
+@model CarRental.Pages.Admin.SettingsModel
+@{
+    ViewData["Title"] = "Ustawienia bezpieczeństwa";
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white py-3">
+                <h4 class="mb-0 fw-bold">⚙️ Ustawienia bezpieczeństwa</h4>
+            </div>
+            <div class="card-body p-4">
+                @if (TempData["SuccessMessage"] is string success)
+                {
+                    <div class="alert alert-success">@success</div>
+                }
+                <form method="post">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <h5 class="text-muted border-bottom pb-2 mb-3 fw-bold">Polityka haseł</h5>
+                    <div class="form-check form-switch mb-3">
+                        <input asp-for="Settings.PersonalDataRuleEnabled" class="form-check-input" />
+                        <label asp-for="Settings.PersonalDataRuleEnabled" class="form-check-label fw-semibold">
+                            Hasło nie może zawierać loginu, imienia ani nazwiska (bez względu na wielkość liter)
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Settings.MinPasswordLength" class="form-label fw-semibold">Minimalna długość hasła (domyślnie 12)</label>
+                        <input asp-for="Settings.MinPasswordLength" type="number" class="form-control" />
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="Settings.PasswordValidityDays" class="form-label fw-semibold">Ważność hasła w dniach (0 = bez wygasania)</label>
+                        <input asp-for="Settings.PasswordValidityDays" type="number" class="form-control" />
+                    </div>
+
+                    <h5 class="text-muted border-bottom pb-2 mb-3 fw-bold">Sesja</h5>
+                    <div class="mb-4">
+                        <label asp-for="Settings.SessionIdleMinutes" class="form-label fw-semibold">Czas bezczynności do wylogowania (minuty)</label>
+                        <input asp-for="Settings.SessionIdleMinutes" type="number" class="form-control" />
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-page="/Admin/Users" class="btn btn-light border">Wróć</a>
+                        <button type="submit" class="btn btn-primary fw-bold">Zapisz</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

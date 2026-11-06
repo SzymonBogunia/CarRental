@@ -1,3 +1,5 @@
+using CarRental.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using CarRental.Models;
@@ -5,6 +7,7 @@ using CarRental.Services;
 
 namespace CarRental.Pages
 {
+    [Authorize(Policy = Permissions.RentalsSettle)]
     public class RentalSettleModel : PageModel
     {
         private readonly IRentalService _rentalService;

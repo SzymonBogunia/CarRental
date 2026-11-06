@@ -1,0 +1,55 @@
+@page "{id:int?}"
+@model CarRental.Pages.Admin.UserEditModel
+@using CarRental.Models
+@using CarRental.Services
+@{
+    ViewData["Title"] = "Edycja użytkownika";
+    var isAdmin = UserService.IsAdminAccount(Model.UserToEdit);
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-7 col-lg-5">
+        <div class="card shadow border-0">
+            <div class="card-header bg-warning text-dark py-3">
+                <h4 class="mb-0 fw-bold">✏️ Edycja: @Model.UserToEdit.Login</h4>
+            </div>
+            <div class="card-body p-4">
+                @if (Model.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
+                <form method="post">
+                    <input type="hidden" asp-for="UserToEdit.Id" />
+                    <div class="mb-3">
+                        <label asp-for="UserToEdit.FirstName" class="form-label fw-semibold">Imię</label>
+                        <input asp-for="UserToEdit.FirstName" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="UserToEdit.LastName" class="form-label fw-semibold">Nazwisko</label>
+                        <input asp-for="UserToEdit.LastName" class="form-control" />
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="UserToEdit.Role" class="form-label fw-semibold">Rola</label>
+                        @if (isAdmin)
+                        {
+                            <input type="hidden" asp-for="UserToEdit.Role" />
+                            <input class="form-control" value="Administrator (konto stałe)" disabled />
+                        }
+                        else
+                        {
+                            <select asp-for="UserToEdit.Role" class="form-select">
+                                <option value="@UserRole.Kierownik">Kierownik</option>
+                                <option value="@UserRole.Pracownik">Pracownik</option>
+                                <option value="@UserRole.Gosc">Gość</option>
+                            </select>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-page="/Admin/Users" class="btn btn-light border">Anuluj</a>
+                        <button type="submit" class="btn btn-warning fw-bold">Zapisz</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

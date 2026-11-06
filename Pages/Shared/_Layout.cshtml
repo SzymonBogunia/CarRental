@@ -20,17 +20,44 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/CarsList">Flota pojazdów</a>
-
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/CustomersList">Klienci</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-page="/RentalsList">Rezerwacje</a>
-                        </li>
+                        @if (User.HasPermission(Permissions.CarsView))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/CarsList">Flota pojazdów</a>
+                            </li>
+                        }
+                        @if (User.HasPermission(Permissions.CustomersView))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/CustomersList">Klienci</a>
+                            </li>
+                        }
+                        @if (User.HasPermission(Permissions.RentalsView))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark fw-semibold" asp-page="/RentalsList">Rezerwacje</a>
+                            </li>
+                        }
+                        @if (User.HasPermission(Permissions.UsersManage))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-danger fw-semibold" asp-page="/Admin/Users">Panel administratora</a>
+                            </li>
+                        }
                     </ul>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small">
+                                👤 <strong>@User.Identity.Name</strong>
+                                (@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)
+                            </span>
+                            <a asp-page="/Account/ChangePassword" class="btn btn-sm btn-outline-secondary">Zmień hasło</a>
+                            <form method="post" asp-page="/Account/Logout" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Wyloguj</button>
+                            </form>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
@@ -50,6 +77,14 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @if (User.Identity?.IsAuthenticated == true && Context.Items["SessionIdleMinutes"] is int idleMinutes)
+    {
+        <script>
+            // Po czasie bezczynności odświeżamy stronę - serwer stwierdzi wygaśnięcie sesji i przekieruje do logowania
+            setTimeout(() => window.location.reload(), (@idleMinutes * 60 + 5) * 1000);
+        </script>
+    }
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

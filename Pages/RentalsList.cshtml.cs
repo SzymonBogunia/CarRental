@@ -1,11 +1,14 @@
 using CarRental.Models;
 using CarRental.Services;
+using CarRental.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CarRental.Pages
 {
+    [Authorize(Policy = Permissions.RentalsView)]
     public class RentalsListModel : PageModel
     {
         private readonly IRentalService _rentalService;
@@ -52,6 +55,9 @@ namespace CarRental.Pages
 
         public async Task<IActionResult> OnPostEditAsync()
         {
+            if (!User.HasPermission(Permissions.RentalsManage))
+                return Forbid();
+
             ModelState.Remove("Rentals");
 
             var result = await _rentalService.EditRentalAsync(RentalToEdit);
@@ -66,6 +72,9 @@ namespace CarRental.Pages
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
+            if (!User.HasPermission(Permissions.RecordsDelete))
+                return Forbid();
+
             await _rentalService.DeleteRentalAsync(RentalIdToDelete);
             return RedirectToPage();
         }
