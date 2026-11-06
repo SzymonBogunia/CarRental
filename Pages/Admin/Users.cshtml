@@ -1,0 +1,111 @@
+@page
+@model CarRental.Pages.Admin.UsersModel
+@using CarRental.Models
+@using CarRental.Services
+@{
+    ViewData["Title"] = "Użytkownicy";
+}
+
+<div class="d-flex justify-content-between align-items-center my-4">
+    <div>
+        <h1 class="fw-bold text-dark">Panel administratora</h1>
+        <p class="text-muted">Zarządzanie kontami użytkowników systemu.</p>
+    </div>
+    <a asp-page="/Admin/Settings" class="btn btn-outline-dark fw-bold">⚙️ Ustawienia bezpieczeństwa</a>
+</div>
+
+@if (TempData["SuccessMessage"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["ErrorMessage"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-success text-white fw-bold">+ Nowy użytkownik (otrzyma hasło jednorazowe)</div>
+    <div class="card-body">
+        <form method="post" asp-page-handler="Create" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label asp-for="NewUser.Login" class="form-label fw-semibold">Login</label>
+                <input asp-for="NewUser.Login" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="NewUser.FirstName" class="form-label fw-semibold">Imię</label>
+                <input asp-for="NewUser.FirstName" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="NewUser.LastName" class="form-label fw-semibold">Nazwisko</label>
+                <input asp-for="NewUser.LastName" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="NewUser.Role" class="form-label fw-semibold">Rola</label>
+                <select asp-for="NewUser.Role" class="form-select">
+                    <option value="@UserRole.Kierownik">Kierownik</option>
+                    <option value="@UserRole.Pracownik">Pracownik</option>
+                    <option value="@UserRole.Gosc" selected>Gość</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-success w-100 fw-bold">Dodaj</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+            <tr>
+                <th>Login</th>
+                <th>Imię i nazwisko</th>
+                <th>Rola</th>
+                <th>Status</th>
+                <th class="text-end">Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                var isAdmin = UserService.IsAdminAccount(user);
+                <tr>
+                    <td class="fw-bold">@user.Login</td>
+                    <td>@user.FirstName @user.LastName</td>
+                    <td>@user.Role</td>
+                    <td>
+                        @if (user.IsBlocked)
+                        {
+                            <span class="badge bg-danger">Zablokowany</span>
+                        }
+                        else if (user.OneTimePasswordExpiresUtc != null)
+                        {
+                            <span class="badge bg-warning text-dark">Hasło jednorazowe do @user.OneTimePasswordExpiresUtc.Value.ToLocalTime().ToString("dd.MM HH:mm")</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Aktywny</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-page="/Admin/UserEdit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning">Edytuj</a>
+                        <form method="post" asp-page-handler="ResetPassword" asp-route-id="@user.Id" class="d-inline"
+                              onsubmit="return confirm('Nadać nowe hasło jednorazowe użytkownikowi @user.Login?');">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Reset hasła</button>
+                        </form>
+                        @if (!isAdmin)
+                        {
+                            <form method="post" asp-page-handler="@(user.IsBlocked ? "Unblock" : "Block")" asp-route-id="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">@(user.IsBlocked ? "Odblokuj" : "Zablokuj")</button>
+                            </form>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@user.Id" class="d-inline"
+                                  onsubmit="return confirm('Usunąć użytkownika @user.Login?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Usuń</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

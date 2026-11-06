@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using CarRental.Security;
+using Microsoft.AspNetCore.Authorization;
 using CarRental.Models;
 using CarRental.Services;
 
@@ -17,6 +19,7 @@ namespace CarRental.Controllers
 
         // wszyscy klienci
         [HttpGet]
+        [Authorize(Policy = Permissions.CustomersView)]
         public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
             var customers = await _customerService.GetAllCustomersAsync();
@@ -25,6 +28,7 @@ namespace CarRental.Controllers
 
         // klient po id
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.CustomersView)]
         public async Task<ActionResult<Customer>> GetCustomer(int id)
         {
             var customer = await _customerService.GetCustomerByIdAsync(id);
@@ -39,6 +43,7 @@ namespace CarRental.Controllers
 
         // nowy klient
         [HttpPost]
+        [Authorize(Policy = Permissions.CustomersManage)]
         public async Task<ActionResult<Customer>> CreateCustomer([FromBody] Customer customer)
         {
             var result = await _customerService.CreateCustomerAsync(customer);
@@ -53,6 +58,7 @@ namespace CarRental.Controllers
 
         // aktualizacja danych klienta
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.CustomersManage)]
         public async Task<IActionResult> UpdateCustomer(int id, [FromBody] Customer customer)
         {
             if (id != customer.Id)
@@ -72,6 +78,7 @@ namespace CarRental.Controllers
 
         // usuwanie klienta
         [HttpDelete("{id}")]
+        [Authorize(Policy = Permissions.RecordsDelete)]
         public async Task<IActionResult> DeleteCustomer(int id)
         {
             

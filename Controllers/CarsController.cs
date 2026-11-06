@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using CarRental.Security;
+using Microsoft.AspNetCore.Authorization;
 using CarRental.Models;
 using CarRental.Services;
 
@@ -17,6 +19,7 @@ namespace CarRental.Controllers
 
         // wszystkie samochody
         [HttpGet]
+        [Authorize(Policy = Permissions.CarsViewDetails)]
         public async Task<ActionResult<IEnumerable<Car>>> GetCars()
         {
             var cars = await _carService.GetAllCarsAsync();
@@ -25,6 +28,7 @@ namespace CarRental.Controllers
 
         // samochód po id
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.CarsViewDetails)]
         public async Task<ActionResult<Car>> GetCar(int id)
         {
             var car = await _carService.GetCarByIdAsync(id);
@@ -39,6 +43,7 @@ namespace CarRental.Controllers
 
         // dodanie auta
         [HttpPost]
+        [Authorize(Policy = Permissions.CarsManage)]
         public async Task<ActionResult<Car>> CreateCar([FromBody] Car car)
         {
             
@@ -54,6 +59,7 @@ namespace CarRental.Controllers
 
         // edycja auta
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.CarsManage)]
         public async Task<IActionResult> UpdateCar(int id, [FromBody] Car car)
         {
             if (id != car.Id)
@@ -73,6 +79,7 @@ namespace CarRental.Controllers
 
         // zmiana statusu 
         [HttpPatch("{id}/status")]
+        [Authorize(Policy = Permissions.CarsManage)]
         public async Task<IActionResult> ChangeStatus(int id, [FromBody] CarStatus newStatus)
         {
             var result = await _carService.ChangeCarStatusAsync(id, newStatus);

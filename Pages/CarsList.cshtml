@@ -9,7 +9,10 @@
         <h1 class="fw-bold text-dark">Flota Samochodów</h1>
         <p class="text-muted">Przeglądaj i zarządzaj dostępnymi pojazdami w systemie.</p>
     </div>
-    <a asp-page="/CarCreate" class="btn btn-success shadow-sm fw-bold">+ Dodaj nowy samochód</a>
+    @if (User.HasPermission(Permissions.CarsManage))
+    {
+        <a asp-page="/CarCreate" class="btn btn-success shadow-sm fw-bold">+ Dodaj nowy samochód</a>
+    }
 </div>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -42,6 +45,10 @@
                     <div class="card-body">
                         <h5 class="card-title fw-bold text-primary mb-3">@car.Model</h5>
                         <p class="card-text mb-2"><strong>Rok produkcji:</strong> @car.ProductionYear</p>
+
+                        @* Gość widzi tylko zdjęcie, markę, model i rok - pozostałe dane nie są w ogóle wysyłane do przeglądarki *@
+                        @if (User.HasPermission(Permissions.CarsViewDetails))
+                        {
                         <p class="card-text mb-3"><strong>Rejestracja:</strong> <span class="badge bg-light text-dark border">@car.RegistrationNumber</span></p>
                         <p class="card-text mb-2"><strong>Numer VIN:</strong> <span class="badge bg-light text-dark border">@car.VIN</span></p>
 
@@ -50,6 +57,8 @@
                                 @car.PricePerDay zł <small class="text-muted" style="font-size: 11px;">/ doba</small>
                             </span>
 
+                            @if (User.HasPermission(Permissions.CarsManage))
+                            {
                             <button type="button"
                                     class="text-warning bg-transparent border-0 edit-icon fs-5 mx-2"
                                     data-bs-toggle="modal"
@@ -66,6 +75,7 @@
                                     title="Edytuj pojazd">
                                 ✏️
                             </button>
+                            }
 
                             @if (car.Status == CarRental.Models.CarStatus.Available)
                             {
@@ -80,6 +90,7 @@
                                 <span class="badge bg-secondary px-3 py-2">W serwisie</span>
                             }
                         </div>
+                        }
                     </div>
                 </div>
             </div>

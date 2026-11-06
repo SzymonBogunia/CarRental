@@ -83,14 +83,17 @@
                                             ✏️
                                         </button>
 
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-danger"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal"
-                                                data-id="@customer.Id"
-                                                data-name="@customer.FirstName @customer.LastName">
-                                            ❌
-                                        </button>
+                                        @if (User.HasPermission(Permissions.RecordsDelete))
+                                        {
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal"
+                                                    data-id="@customer.Id"
+                                                    data-name="@customer.FirstName @customer.LastName">
+                                                ❌
+                                            </button>
+                                        }
                                     </div>
                                 </td>
                             </tr>

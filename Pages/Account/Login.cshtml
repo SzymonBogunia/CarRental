@@ -1,0 +1,36 @@
+@page
+@model CarRental.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Logowanie";
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white py-3">
+                <h4 class="mb-0 fw-bold">🔐 Logowanie</h4>
+            </div>
+            <div class="card-body p-4">
+                @if (Model.SessionExpired)
+                {
+                    <div class="alert alert-warning">Sesja wygasła z powodu bezczynności. Zaloguj się ponownie.</div>
+                }
+                @if (Model.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Login" class="form-label fw-semibold">Login</label>
+                        <input asp-for="Login" class="form-control" autocomplete="username" required autofocus />
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label fw-semibold">Hasło</label>
+                        <input asp-for="Password" type="password" value="" class="form-control" autocomplete="current-password" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">Zaloguj</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

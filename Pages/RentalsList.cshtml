@@ -121,10 +121,13 @@
                                                     data-start="@rental.StartDate.ToString("yyyy-MM-ddTHH:00")" data-end="@rental.EndDate.ToString("yyyy-MM-ddTHH:00")">
                                                 ✏️
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRentalModal"
-                                                    data-id="@rental.Id">
-                                                ❌
-                                            </button>
+                                            @if (User.HasPermission(Permissions.RecordsDelete))
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRentalModal"
+                                                        data-id="@rental.Id">
+                                                    ❌
+                                                </button>
+                                            }
                                         </div>
                                     </td>
                                 </tr>

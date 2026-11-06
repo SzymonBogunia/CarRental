@@ -1,0 +1,12 @@
+@page
+@model CarRental.Pages.Account.AccessDeniedModel
+@{
+    ViewData["Title"] = "Brak dostępu";
+}
+
+<div class="text-center my-5">
+    <h1 class="display-4 fw-bold text-danger">403</h1>
+    <h4 class="fw-bold">Brak dostępu</h4>
+    <p class="text-muted">Twoja rola nie ma uprawnień do tej strony lub operacji.</p>
+    <a asp-page="/Index" class="btn btn-outline-primary">Wróć na stronę główną</a>
+</div>

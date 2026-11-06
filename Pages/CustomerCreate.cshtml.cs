@@ -1,10 +1,13 @@
 using CarRental.Models;
 using CarRental.Services;
+using CarRental.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CarRental.Pages
 {
+    [Authorize(Policy = Permissions.CustomersManage)]
     public class CustomerCreateModel : PageModel
     {
         private readonly ICustomerService _customerService;
